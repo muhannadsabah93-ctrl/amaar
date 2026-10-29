@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>القالب للكونكريت - نظام إدارة زيت المحرك</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Cairo & Tajawal -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900;1000&family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#0d9488',
+                            600: '#0d7490',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                            950: '#042f2e',
+                        }
+                    },
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        tajawal: ['Tajawal', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Tajawal', 'Cairo', sans-serif;
+            background-color: #f1f5f9;
+            color: #020617;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 2px solid #cbd5e1;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #64748b;
+            border-radius: 4px;
+        }
+
+        /* Thermal Receipt Styling for 58mm Printer */
+        #receipt-print-area {
+            display: none;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #receipt-print-area, #receipt-print-area * {
+                visibility: visible;
+            }
+            #receipt-print-area {
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 58mm;
+                margin: 0;
+                padding: 3mm 2mm;
+                font-family: 'Courier New', Courier, monospace, 'Tajawal';
+                font-size: 12px;
+                font-weight: 800;
+                color: #000;
+                background: #fff;
+                line-height: 1.35;
+            }
+            @page {
+                size: 58mm auto;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-100 text-slate-950 antialiased font-bold">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-30 bg-slate-950 text-white shadow-xl border-b-2 border-brand-500">
+        <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <!-- SVG Embedded Logo (Al-Qalib Concrete Hexagon Motif) -->
+                <div class="bg-white p-1.5 rounded-2xl shadow-md border border-slate-700 flex items-center justify-center shrink-0 w-12 h-12">
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <path d="M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z" fill="none" stroke="#2c323d" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+                        <polygon points="50,35 65,43.5 65,60.5 50,69 35,60.5 35,43.5" fill="#0d9488" />
+                        <circle cx="82" cy="42" r="3" fill="#2c323d" />
+                        <circle cx="85" cy="50" r="3.5" fill="#2c323d" />
+                        <circle cx="78" cy="56" r="3" fill="#2c323d" />
+                        <circle cx="84" cy="63" r="2.5" fill="#2c323d" />
+                        <circle cx="58" cy="80" r="3" fill="#2c323d" />
+                        <circle cx="66" cy="76" r="3.5" fill="#2c323d" />
+                        <circle cx="50" cy="86" r="2.5" fill="#2c323d" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-black text-lg leading-tight font-cairo text-white tracking-wide">القالب للكونكريت</h1>
+                    <p class="text-xs text-brand-400 font-extrabold">نظام متابعة زيت المحرك للآليات</p>
+                </div>
+            </div>
+
+            <!-- Designer Badge & Admin Actions -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs font-bold">
+                    <i class="fa-solid fa-code text-brand-500"></i>
+                    <span>مصمم التطبيق: <strong class="text-white font-extrabold">مهند صباح</strong></span>
+                </div>
+
+                <span id="roleBadge" class="hidden sm:inline-flex px-3 py-1.5 text-xs font-extrabold rounded-full bg-slate-900 text-slate-200 border border-slate-700 items-center gap-1.5">
+                    <i class="fa-solid fa-user-shield text-brand-400"></i>
+                    <span id="roleText">السائق</span>
+                </span>
+
+                <button id="adminLoginHeaderBtn" onclick="promptAdminLoginModal()" class="text-xs sm:text-sm bg-brand-600 hover:bg-brand-700 text-white font-black px-4 py-2 rounded-xl transition duration-200 flex items-center gap-2 shadow-md">
+                    <i class="fa-solid fa-lock text-amber-300"></i>
+                    <span>لوحة الإدارة</span>
+                </button>
+                
+                <button id="exitAdminBtn" onclick="switchToDriverMode()" class="hidden text-xs sm:text-sm bg-rose-950 hover:bg-rose-900 text-rose-200 font-black px-4 py-2 rounded-xl border border-rose-800 transition flex items-center gap-1.5 shadow-md">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>خروج</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-7">
+
+        <!-- Designer Badge Mobile Only -->
+        <div class="lg:hidden mb-4 p-2 rounded-xl bg-slate-900 text-slate-300 text-center text-xs border border-slate-800 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-code text-brand-400"></i>
+            <span>مصمم التطبيق: <strong class="text-white font-black">مهند صباح</strong></span>
+        </div>
+
+        <!-- Admin View Tabs Nav -->
+        <div id="adminTabNav" class="hidden mb-6 flex flex-wrap gap-2 border-b-2 border-slate-300 pb-3">
+            <button onclick="switchTab('service')" id="tab-service" class="tab-btn active-tab px-5 py-2.5 rounded-xl text-sm font-black transition flex items-center gap-2 bg-brand-600 text-white shadow-md">
+                <i class="fa-solid fa-oil-can"></i>
+                تسجيل صيانة وتبديل زيت
+            </button>
+            <button onclick="switchTab('vehicles')" id="tab-vehicles" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-black text-slate-800 bg-white border border-slate-300 hover:bg-slate-200 transition flex items-center gap-2">
+                <i class="fa-solid fa-truck-monster"></i>
+                إدارة الآليات (<span id="vehiclesCountNav">0</span>)
+            </button>
+            <button onclick="switchTab('records')" id="tab-records" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-black text-slate-800 bg-white border border-slate-300 hover:bg-slate-200 transition flex items-center gap-2">
+                <i class="fa-solid fa-box-archive"></i>
+                سجلات الصيانة والفلترة
+            </button>
+            <button onclick="switchTab('settings')" id="tab-settings" class="tab-btn px-5 py-2.5 rounded-xl text-sm font-black text-slate-800 bg-white border border-slate-300 hover:bg-slate-200 transition flex items-center gap-2">
+                <i class="fa-solid fa-sliders"></i>
+                الإعدادات
+            </button>
+        </div>
+
+        <!-- ==================== DRIVER VIEW (DEFAULT) ==================== -->
+        <div id="view-driver" class="max-w-xl mx-auto space-y-5">
+            <div class="bg-gradient-to-br from-slate-950 via-slate-900 to-brand-950 rounded-3xl p-6 text-white shadow-2xl text-center space-y-3 border-2 border-slate-800">
+                <div class="w-16 h-16 bg-white/10 rounded-2xl mx-auto flex items-center justify-center border border-white/20 shadow-inner">
+                    <svg viewBox="0 0 100 100" class="w-10 h-10">
+                        <path d="M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z" fill="none" stroke="#ffffff" stroke-width="10"/>
+                        <polygon points="50,35 65,43.5 65,60.5 50,69 35,60.5 35,43.5" fill="#2dd4bf" />
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-black font-cairo text-white">معامل القالب للكونكريت</h2>
+                <p class="text-sm font-extrabold text-brand-300">
+                    واجهة السائق - الاستعلام السريع عن استحقاق الزيت
+                </p>
+            </div>
+
+            <!-- Driver Form Card -->
+            <div class="glass-card rounded-3xl p-5 sm:p-7 shadow-xl border-2 border-slate-300 space-y-5">
+                <div>
+                    <label class="block text-sm font-black text-slate-950 mb-2">1. اختر الآلية:</label>
+                    <select id="driverVehicleSelect" onchange="onDriverSelectVehicle()" class="w-full p-3.5 text-base font-black rounded-2xl border-2 border-slate-400 focus:ring-4 focus:ring-brand-500 focus:border-brand-600 outline-none bg-white text-slate-950 shadow-sm">
+                        <option value="">-- اختر رقم أو اسم الآلية --</option>
+                    </select>
+                </div>
+
+                <!-- Vehicle Info Box -->
+                <div id="driverVehicleInfoBox" class="hidden bg-slate-50 border-2 border-slate-300 p-4 rounded-2xl space-y-2.5 text-sm">
+                    <div class="flex justify-between border-b-2 border-slate-200 pb-2">
+                        <span class="text-slate-700 font-extrabold">السائق المعتمد:</span>
+                        <span id="driverInfoDriver" class="font-black text-slate-950 text-base">-</span>
+                    </div>
+                    <div class="flex justify-between border-b-2 border-slate-200 pb-2">
+                        <span class="text-slate-700 font-extrabold">العداد عند آخر تبديل زيت:</span>
+                        <span id="driverInfoLastOil" class="font-black text-slate-950 text-base">- كم</span>
+                    </div>
+                    <div class="flex justify-between border-b-2 border-slate-200 pb-2">
+                        <span class="text-slate-700 font-extrabold">مسافة الاستحقاق المحددة:</span>
+                        <span id="driverInfoInterval" class="font-black text-brand-700 text-base">- كم</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-700 font-extrabold">عداد الاستحقاق القادم:</span>
+                        <span id="driverInfoNextDue" class="font-black text-slate-950 text-base">- كم</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-black text-slate-950 mb-2">2. أدخل قراءة العداد الحالية:</label>
+                    <div class="relative">
+                        <input type="number" id="driverOdometerInput" oninput="calculateDriverCheck()" placeholder="مثال: 30500" class="w-full p-4 pl-14 text-xl font-black rounded-2xl border-2 border-slate-400 focus:ring-4 focus:ring-brand-500 focus:border-brand-600 outline-none shadow-sm text-slate-950">
+                        <span class="absolute left-4 top-4 text-sm font-black text-slate-500">كم</span>
+                    </div>
+                </div>
+
+                <!-- Live Result Box -->
+                <div id="driverResultBox" class="hidden p-5 rounded-2xl text-center space-y-2 border-2 transition-all">
+                    <div id="driverStatusBadge" class="inline-block px-4 py-1 rounded-full text-xs font-black mb-1">
+                        -
+                    </div>
+                    <h3 id="driverResultTitle" class="text-2xl font-black">--</h3>
+                    <p id="driverResultSub" class="text-sm font-bold opacity-95">--</p>
+                </div>
+
+                <!-- Action Button -->
+                <button id="driverSaveCheckBtn" onclick="saveDriverCheckRecord()" disabled class="w-full py-4 bg-slate-300 text-slate-500 rounded-2xl text-base font-black shadow-md transition flex items-center justify-center gap-2 cursor-not-allowed">
+                    <i class="fa-solid fa-calculator text-lg"></i>
+                    كم المتبقي
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== ADMIN: SERVICE & VARIABLES TAB ==================== -->
+        <div id="view-service" class="tab-content hidden max-w-2xl mx-auto space-y-6">
+            <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-brand-950 rounded-3xl p-6 text-white shadow-2xl space-y-2 border-2 border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="p-3 bg-brand-600 rounded-2xl text-white text-xl">
+                        <i class="fa-solid fa-oil-can"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-black font-cairo">تسجيل متغيرات صيانة الزيت وتحديث العداد</h2>
+                        <p class="text-xs text-brand-300 font-bold">إدخال المتغيرات، الاعتماد الفوري للعداد، وطباعة الوصل</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Form -->
+            <div class="bg-white rounded-3xl p-6 shadow-xl border-2 border-slate-300 space-y-5">
+                <div>
+                    <label class="block text-sm font-black text-slate-950 mb-2">1. رمز / رقم الآلية:</label>
+                    <select id="adminServiceVehicleSelect" onchange="onAdminServiceSelectVehicle()" class="w-full p-3.5 text-base font-black rounded-2xl border-2 border-slate-400 focus:ring-4 focus:ring-brand-500 outline-none text-slate-950 bg-white">
+                        <option value="">-- اختر الآلية لتسجيل الصيانة --</option>
+                    </select>
+                </div>
+
+                <!-- Selected Vehicle Quick Overview -->
+                <div id="adminServiceOverview" class="hidden p-4 rounded-2xl bg-slate-100 border-2 border-slate-300 text-xs sm:text-sm space-y-2">
+                    <div class="flex justify-between border-b border-slate-300 pb-1.5">
+                        <span class="text-slate-600">اسم الآلية بالسجلات:</span>
+                        <span id="svcOverviewName" class="font-black text-slate-900">-</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-300 pb-1.5">
+                        <span class="text-slate-600">السائق المعتمد:</span>
+                        <span id="svcOverviewDriver" class="font-black text-slate-900">-</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-300 pb-1.5">
+                        <span class="text-slate-600">العداد المعتمَد السابق:</span>
+                        <span id="svcOverviewOldOdo" class="font-black text-slate-900">- كم</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-600">مسافة الاستحقاق المحددة:</span>
+                        <span id="svcOverviewInterval" class="font-black text-brand-700">- كم</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-black text-slate-950 mb-2">2. نوع الزيت المستخدم:</label>
+                    <input type="text" id="adminServiceOilType" placeholder="مثال: Super Diesel 15W40 / Mobil Delvac" class="w-full p-3.5 text-base font-black rounded-2xl border-2 border-slate-400 focus:ring-4 focus:ring-brand-500 outline-none text-slate-950">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-black text-slate-950 mb-2">3. تبديل فلتر الزيت؟</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center justify-center gap-2 p-3.5 rounded-2xl border-2 border-slate-300 bg-slate-50 cursor-pointer hover:bg-slate-100 font-black text-sm">
+                            <input type="radio" name="filterChanged" value="نعم" checked class="w-5 h-5 text-brand-600 accent-brand-600">
+                            <span>نعم (تم التبديل)</span>
+                        </label>
+                        <label class="flex items-center justify-center gap-2 p-3.5 rounded-2xl border-2 border-slate-300 bg-slate-50 cursor-pointer hover:bg-slate-100 font-black text-sm">
+                            <input type="radio" name="filterChanged" value="لا" class="w-5 h-5 text-brand-600 accent-brand-600">
+                            <span>لا (لم يتم التبديل)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-black text-slate-950 mb-2">4. قراءة العداد الحالية (عند الصيانة/الفحص):</label>
+                    <div class="relative">
+                        <input type="number" id="adminServiceOdometer" oninput="calculateAdminServiceResult()" placeholder="أدخل القراءة الحالية" class="w-full p-4 pl-14 text-xl font-black rounded-2xl border-2 border-slate-400 focus:ring-4 focus:ring-brand-500 outline-none text-slate-950">
+                        <span class="absolute left-4 top-4 text-sm font-black text-slate-500">كم</span>
+                    </div>
+                </div>
+
+                <div id="adminServiceCalcCard" class="hidden p-5 rounded-2xl text-center space-y-2 border-2 transition-all">
+                    <span id="svcCalcBadge" class="inline-block px-4 py-1 rounded-full text-xs font-black mb-1">-</span>
+                    <h3 id="svcCalcTitle" class="text-2xl font-black">--</h3>
+                    <p id="svcCalcSub" class="text-sm font-bold opacity-95">--</p>
+                </div>
+
+                <button id="adminServiceSubmitBtn" onclick="submitAdminServiceAndPrint()" disabled class="w-full py-4 bg-slate-300 text-slate-500 rounded-2xl text-base font-black shadow-lg transition flex items-center justify-center gap-3 cursor-not-allowed">
+                    <i class="fa-solid fa-print text-xl"></i>
+                    <span>اعتماد العداد وطباعة الوصل (58mm)</span>
+                </button>
+                <p class="text-xs text-slate-500 text-center font-bold">
+                    * الضغط على هذا الزر سيقوم باعتماد العداد المدخل كآخر عداد رسمي للآلية وحفظ العملية بالسجلات سحابياً.
+                </p>
+            </div>
+        </div>
+
+        <!-- ==================== ADMIN: VEHICLES MANAGEMENT TAB ==================== -->
+        <div id="view-vehicles" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-5 rounded-3xl shadow-sm border-2 border-slate-300">
+                <div>
+                    <h2 class="text-xl font-black text-slate-950">إدارة الآليات والمركبات</h2>
+                    <p class="text-xs text-slate-600 font-extrabold">إضافة وتعديل بيانات الآليات وتحديد مسافة الاستحقاق الحرة</p>
+                </div>
+                <button onclick="openAddVehicleModal()" class="bg-brand-600 hover:bg-brand-700 text-white px-5 py-3 rounded-2xl text-sm font-black transition shadow-md flex items-center gap-2">
+                    <i class="fa-solid fa-plus text-base"></i>
+                    إضافة آلية جديدة
+                </button>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm border-2 border-slate-300 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-sm">
+                        <thead class="bg-slate-200 text-slate-950 font-black border-b-2 border-slate-300">
+                            <tr>
+                                <th class="p-4">رقم الآلية</th>
+                                <th class="p-4">اسم/نوع الآلية</th>
+                                <th class="p-4">السائق</th>
+                                <th class="p-4">العداد المعتمَد (القديم)</th>
+                                <th class="p-4">مسافة الاستحقاق</th>
+                                <th class="p-4">عداد الاستحقاق Target</th>
+                                <th class="p-4">آخر فحص عداد</th>
+                                <th class="p-4">الحالة</th>
+                                <th class="p-4 text-center">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vehiclesTableBody" class="divide-y-2 divide-slate-100 font-bold">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== ADMIN: RECORDS TAB ==================== -->
+        <div id="view-records" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-300 space-y-4">
+                <div class="flex items-center justify-between border-b-2 border-slate-200 pb-3">
+                    <h2 class="text-lg font-black text-slate-950 flex items-center gap-2">
+                        <i class="fa-solid fa-filter text-brand-600"></i>
+                        سجلات العمليات والصيانة
+                    </h2>
+                    <button onclick="resetRecordsFilter()" class="text-xs text-rose-700 hover:text-rose-900 font-black flex items-center gap-1">
+                        <i class="fa-solid fa-rotate-left"></i> إعادة ضبط
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-black text-slate-700 mb-1">بحث نصي شامل</label>
+                        <input type="text" id="filterSearch" oninput="applyRecordsFilter()" placeholder="آلية، سائق، زيت..." class="w-full p-2.5 text-xs font-bold rounded-xl border-2 border-slate-300 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black text-slate-700 mb-1">تصفية حسب الآلية</label>
+                        <select id="filterVehicle" onchange="applyRecordsFilter()" class="w-full p-2.5 text-xs font-bold rounded-xl border-2 border-slate-300 outline-none">
+                            <option value="">جميع الآليات</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black text-slate-700 mb-1">نوع العملية</label>
+                        <select id="filterOpType" onchange="applyRecordsFilter()" class="w-full p-2.5 text-xs font-bold rounded-xl border-2 border-slate-300 outline-none">
+                            <option value="">كافة العمليات</option>
+                            <option value="صيانة واعتماد عداد">صيانة واعتماد عداد</option>
+                            <option value="فحص عداد">فحص عداد سائق</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black text-slate-700 mb-1">حالة الاستحقاق</label>
+                        <select id="filterStatus" onchange="applyRecordsFilter()" class="w-full p-2.5 text-xs font-bold rounded-xl border-2 border-slate-300 outline-none">
+                            <option value="">جميع الحالات</option>
+                            <option value="لم يحن الموعد">لم يحن الموعد</option>
+                            <option value="حان موعد تبديل الزيت">حان الموعد</option>
+                            <option value="متجاوز للاستحقاق">متجاوز للاستحقاق</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-sm border-2 border-slate-300 overflow-hidden">
+                <div class="p-4 border-b-2 border-slate-200 flex items-center justify-between">
+                    <span class="text-xs font-black text-slate-700">عدد السجلات: <span id="recordsFoundCount" class="text-brand-600 font-extrabold text-sm">0</span></span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs">
+                        <thead class="bg-slate-200 text-slate-950 font-black border-b-2 border-slate-300">
+                            <tr>
+                                <th class="p-3">رقم الوصل</th>
+                                <th class="p-3">التاريخ</th>
+                                <th class="p-3">الآلية</th>
+                                <th class="p-3">نوع العملية</th>
+                                <th class="p-3">نوع الزيت</th>
+                                <th class="p-3">تبديل فلتر</th>
+                                <th class="p-3">العداد المسجل</th>
+                                <th class="p-3">المتبقي / المتجاوز</th>
+                                <th class="p-3">الحالة</th>
+                                <th class="p-3 text-center">التفاصيل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsTableBody" class="divide-y divide-slate-200 font-bold">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== ADMIN: SETTINGS TAB ==================== -->
+        <div id="view-settings" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Data Backup -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-300 space-y-4">
+                    <h3 class="font-black text-slate-950 text-base border-b-2 border-slate-200 pb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-database text-brand-600"></i>
+                        النسخ الاحتياطي واستعادة البيانات
+                    </h3>
+                    <p class="text-xs text-slate-600 leading-relaxed font-bold">
+                        البيانات متزامنة سحابياً عبر Firebase Firestore. يمكنك تصدير نسخة محلية بصيغة JSON للأمان.
+                    </p>
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <button onclick="exportDataJSON()" class="bg-slate-900 hover:bg-black text-white px-4 py-2.5 rounded-xl text-xs font-black transition flex items-center gap-2">
+                            <i class="fa-solid fa-download"></i> تصدير JSON
+                        </button>
+                        <button onclick="restoreDefaultData()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border-2 border-rose-300 px-4 py-2.5 rounded-xl text-xs font-black transition flex items-center gap-2">
+                            <i class="fa-solid fa-trash-arrow-up"></i> استعادة البيانات الافتراضية
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Admin Password Change -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-300 space-y-4">
+                    <h3 class="font-black text-slate-950 text-base border-b-2 border-slate-200 pb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-key text-amber-500"></i>
+                        تغيير كلمة مرور الإدارة
+                    </h3>
+                    <form onsubmit="handlePasswordChange(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-black text-slate-700 mb-1">كلمة المرور الحالية</label>
+                            <input type="password" id="currentPassInput" required class="w-full p-3 text-xs font-black rounded-xl border-2 border-slate-300 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black text-slate-700 mb-1">كلمة المرور الجديدة</label>
+                            <input type="password" id="newPassInput" required minlength="4" class="w-full p-3 text-xs font-black rounded-xl border-2 border-slate-300 outline-none">
+                        </div>
+                        <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-xl text-xs font-black transition shadow-sm">
+                            حفظ كلمة المرور
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t-2 border-slate-300 py-4 mt-auto text-center text-xs text-slate-700 font-black">
+        <p>نظام إدارة مواعيد زيت المحرك © 2026 - معامل القالب للكونكريت | مصمم التطبيق: <span class="text-brand-700 font-black">مهند صباح</span></p>
+    </footer>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- Admin Auth Modal -->
+    <div id="modalAdminAuth" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-xs w-full p-6 shadow-2xl space-y-4 border-2 border-slate-300">
+            <div class="text-center space-y-2">
+                <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl mx-auto flex items-center justify-center text-2xl border-2 border-amber-300">
+                    <i class="fa-solid fa-user-lock"></i>
+                </div>
+                <h3 class="font-black text-slate-950 text-lg">الدخول إلى الإدارة</h3>
+                <p class="text-xs text-slate-600 font-bold">أدخل كلمة المرور للانتقال للوحة التحكم</p>
+            </div>
+
+            <form onsubmit="handleAdminLoginSubmit(event)" class="space-y-4">
+                <div>
+                    <input type="password" id="adminPinInput" required placeholder="رمز الدخول" class="w-full p-3.5 text-center text-base font-black tracking-widest rounded-2xl border-2 border-slate-300 focus:ring-4 focus:ring-brand-500 outline-none">
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="closeAdminAuthModal()" class="w-1/2 py-2.5 text-xs font-black text-slate-700 bg-slate-200 hover:bg-slate-300 rounded-xl">إلغاء</button>
+                    <button type="submit" class="w-1/2 py-2.5 text-xs font-black text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md">دخول</button>
+                </div>
+            </form>
+            <p class="text-[11px] text-slate-500 text-center font-bold">الرمز الافتراضي: admin123</p>
+        </div>
+    </div>
+
+    <!-- Add/Edit Vehicle Modal -->
+    <div id="modalVehicle" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto border-2 border-slate-300">
+            <div class="flex items-center justify-between border-b-2 border-slate-200 pb-3">
+                <h3 id="modalVehicleTitle" class="font-black text-slate-950 text-lg">إضافة آلية جديدة</h3>
+                <button onclick="closeVehicleModal()" class="text-slate-500 hover:text-slate-800"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <form onsubmit="saveVehicleForm(event)" class="space-y-4">
+                <input type="hidden" id="vFormOriginalCode">
+                <div>
+                    <label class="block text-xs font-black text-slate-800 mb-1">رمز/رقم الآلية (فريد)</label>
+                    <input type="text" id="vFormCode" required placeholder="مثال: 101 أو M-20" class="w-full p-3 text-xs font-black rounded-xl border-2 border-slate-300 focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-black text-slate-800 mb-1">نوع/اسم الآلية</label>
+                    <input type="text" id="vFormName" required placeholder="مثال: خاباطة مارسيدس أكتروس" class="w-full p-3 text-xs font-black rounded-xl border-2 border-slate-300 focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-black text-slate-800 mb-1">اسم السائق المعتمد</label>
+                    <input type="text" id="vFormDriver" required placeholder="اسم السائق" class="w-full p-3 text-xs font-black rounded-xl border-2 border-slate-300 focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-black text-slate-800 mb-1">العداد عند آخر تبديل زيت (العداد المعتمَد)</label>
+                    <input type="number" id="vFormLastOil" required placeholder="مثال: 25000" class="w-full p-3 text-xs font-black rounded-xl border-2 border-slate-300 focus:ring-2 focus:ring-brand-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-black text-slate-800 mb-1">مسافة الاستحقاق المحددة (كتابة حرّة بالكيلومتر)</label>
+                    <div class="relative">
+                        <input type="number" id="vFormInterval" required placeholder="مثال: 5000 أو 7500" class="w-full p-3 pl-12 text-xs font-black rounded-xl border-2 border-slate-300 focus:ring-2 focus:ring-brand-500 outline-none">
+                        <span class="absolute left-3 top-3 text-xs font-black text-slate-500">كم</span>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-black text-slate-800 mb-1">ملاحظات إضافية</label>
+                    <textarea id="vFormNotes" rows="2" placeholder="أي معلومات صيانة إضافية..." class="w-full p-3 text-xs font-black rounded-xl border-2 border-slate-300 focus:ring-2 focus:ring-brand-500 outline-none"></textarea>
+                </div>
+
+                <div class="pt-3 flex gap-2 justify-end border-t-2 border-slate-200">
+                    <button type="button" onclick="closeVehicleModal()" class="px-4 py-2.5 text-xs font-black text-slate-700 bg-slate-200 hover:bg-slate-300 rounded-xl">إلغاء</button>
+                    <button type="submit" class="px-6 py-2.5 text-xs font-black text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md">حفظ الآلية</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Thermal Receipt Preview Modal -->
+    <div id="modalReceipt" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 border-2 border-slate-300">
+            <div class="flex items-center justify-between border-b-2 border-slate-200 pb-2">
+                <h3 class="font-black text-slate-950 text-base flex items-center gap-2">
+                    <i class="fa-solid fa-print text-brand-600"></i> معاينة الوصل الحراري (58mm)
+                </h3>
+                <button onclick="closeReceiptModal()" class="text-slate-500 hover:text-slate-800"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div id="receiptScreenPreview" class="bg-slate-50 border-2 border-slate-300 p-4 rounded-2xl text-slate-950 font-mono text-xs shadow-inner space-y-2 font-bold">
+                <!-- Content generated -->
+            </div>
+
+            <div class="flex gap-2 justify-end pt-2">
+                <button onclick="closeReceiptModal()" class="px-4 py-2.5 text-xs font-black text-slate-700 bg-slate-200 hover:bg-slate-300 rounded-xl">إغلاق</button>
+                <button onclick="triggerPrintReceipt()" class="px-5 py-2.5 text-xs font-black text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md flex items-center gap-2">
+                    <i class="fa-solid fa-print"></i> طباعة الوصل
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Record Detail View Modal -->
+    <div id="modalRecordDetail" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border-2 border-slate-300">
+            <div class="flex items-center justify-between border-b-2 border-slate-200 pb-2">
+                <h3 class="font-black text-slate-950 text-base">تفاصيل السجل الكاملة</h3>
+                <button onclick="closeRecordDetailModal()" class="text-slate-500 hover:text-slate-800"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div id="recordDetailContent" class="space-y-2 text-xs font-bold text-slate-800">
+                <!-- Dynamic -->
+            </div>
+            <div class="text-left pt-2">
+                <button onclick="closeRecordDetailModal()" class="px-5 py-2 text-xs font-black bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Print Target 58mm -->
+    <div id="receipt-print-area"></div>
+
+    <!-- Firebase SDK & App Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
+        import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBAxpYHnFMeby2qL-sFXwv5LbPzDLuHwxc",
+            authDomain: "amaar-18e0e.firebaseapp.com",
+            projectId: "amaar-18e0e",
+            storageBucket: "amaar-18e0e.firebasestorage.app",
+            messagingSenderId: "560277135358",
+            appId: "1:560277135358:web:91bbf1f3e336a0b984eaaf",
+            measurementId: "G-NCZ4W1KLPL"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+
+        const DEFAULT_PASSWORD = "admin123";
+
+        const DEFAULT_VEHICLES = [
+            {
+                code: "101",
+                name: "خباطة مارسيدس أكتروس",
+                driver: "أحمد الفضلي",
+                lastOilOdometer: 25000,
+                oilInterval: 5000,
+                lastCheckOdometer: 28200,
+                lastCheckDate: "2026-10-25T10:30:00.000Z",
+                notes: "المركز الرئيسي"
+            },
+            {
+                code: "102",
+                name: "مضخة كونكريت بوتمستر",
+                driver: "حسين الساعدي",
+                lastOilOdometer: 42000,
+                oilInterval: 4000,
+                lastCheckOdometer: 47000,
+                lastCheckDate: "2026-10-28T14:15:00.000Z",
+                notes: "مضخة 42 متر"
+            }
+        ];
+
+        let currentRole = "driver";
+        window.vehicles = [];
+        window.records = [];
+        let adminPassword = DEFAULT_PASSWORD;
+        let activeReceiptData = null;
+
+        window.onload = function() {
+            initFirebaseRealtimeSync();
+            updateRoleUI();
+        };
+
+        function initFirebaseRealtimeSync() {
+            // Realtime sync for vehicles
+            onSnapshot(collection(db, "vehicles"), (snapshot) => {
+                window.vehicles = [];
+                snapshot.forEach((docSnap) => {
+                    window.vehicles.push(docSnap.data());
+                });
+                if (window.vehicles.length === 0) {
+                    // Seed defaults if empty
+                    DEFAULT_VEHICLES.forEach(async (v) => {
+                        await setDoc(doc(db, "vehicles", v.code), v);
+                    });
+                }
+                renderAllViews();
+            });
+
+            // Realtime sync for records
+            onSnapshot(collection(db, "records"), (snapshot) => {
+                window.records = [];
+                snapshot.forEach((docSnap) => {
+                    window.records.push(docSnap.data());
+                });
+                window.records.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                renderAllViews();
+            });
+        }
+
+        window.renderAllViews = function() {
+            populateAllVehicleSelects();
+            renderDashboardStats();
+            renderVehiclesTable();
+            applyRecordsFilter();
+        }
+
+        window.switchTab = function(tabId) {
+            document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+            document.querySelectorAll(".tab-btn").forEach(btn => {
+                btn.className = "tab-btn px-5 py-2.5 rounded-xl text-sm font-black text-slate-800 bg-white border border-slate-300 hover:bg-slate-200 transition flex items-center gap-2";
+            });
+
+            const targetView = document.getElementById(`view-${tabId}`);
+            const targetBtn = document.getElementById(`tab-${tabId}`);
+
+            if (targetView) targetView.classList.remove("hidden");
+            if (targetBtn) {
+                targetBtn.className = "tab-btn active-tab px-5 py-2.5 rounded-xl text-sm font-black transition flex items-center gap-2 bg-brand-600 text-white shadow-md";
+            }
+
+            if (tabId === 'vehicles') renderVehiclesTable();
+            if (tabId === 'records') applyRecordsFilter();
+        }
+
+        function computeVehicleStatus(v) {
+            const nextDue = Number(v.lastOilOdometer) + Number(v.oilInterval);
+            const currentOdo = v.lastCheckOdometer !== undefined ? Number(v.lastCheckOdometer) : Number(v.lastOilOdometer);
+            const diff = currentOdo - nextDue;
+
+            let status = "لم يحن الموعد";
+            if (diff > 0) {
+                status = "متجاوز للاستحقاق";
+            } else if (diff === 0 || Math.abs(diff) <= 150) {
+                status = "حان موعد تبديل الزيت";
+            }
+            return { nextDue, diff, status, currentOdo };
+        }
+
+        function renderDashboardStats() {
+            document.getElementById("vehiclesCountNav").innerText = window.vehicles.length;
+        }
+
+        function renderVehiclesTable() {
+            const tbody = document.getElementById("vehiclesTableBody");
+            tbody.innerHTML = "";
+
+            if (window.vehicles.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-slate-500 font-black">لا توجد آليات مسجلة</td></tr>`;
+                return;
+            }
+
+            window.vehicles.forEach(v => {
+                const computed = computeVehicleStatus(v);
+                let statusBadge = `<span class="px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-300">لم يحن الموعد</span>`;
+                if (computed.status === "حان موعد تبديل الزيت") {
+                    statusBadge = `<span class="px-3 py-1 rounded-full text-xs font-black bg-amber-100 text-amber-900 border border-amber-300">حان الموعد</span>`;
+                } else if (computed.status === "متجاوز للاستحقاق") {
+                    statusBadge = `<span class="px-3 py-1 rounded-full text-xs font-black bg-rose-100 text-rose-900 border border-rose-300">متجاوز (${computed.diff.toLocaleString()} كم)</span>`;
+                }
+
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50 transition border-b border-slate-200 text-slate-900";
+                tr.innerHTML = `
+                    <td class="p-4 font-black font-mono text-brand-700">#${v.code}</td>
+                    <td class="p-4 font-black text-slate-950">${v.name}</td>
+                    <td class="p-4">${v.driver}</td>
+                    <td class="p-4 font-mono">${v.lastOilOdometer.toLocaleString()} كم</td>
+                    <td class="p-4 font-mono text-brand-700">${v.oilInterval.toLocaleString()} كم</td>
+                    <td class="p-4 font-mono font-black text-slate-950">${computed.nextDue.toLocaleString()} كم</td>
+                    <td class="p-4 font-mono text-slate-700">${v.lastCheckOdometer ? v.lastCheckOdometer.toLocaleString() + ' كم' : '-'}</td>
+                    <td class="p-4">${statusBadge}</td>
+                    <td class="p-4 text-center space-x-1 space-x-reverse">
+                        <button onclick="openEditVehicleModal('${v.code}')" title="تعديل" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-900 rounded-xl text-xs transition">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button onclick="deleteVehicle('${v.code}')" title="حذف" class="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-xl text-xs transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function populateAllVehicleSelects() {
+            const driverSelect = document.getElementById("driverVehicleSelect");
+            const adminServiceSelect = document.getElementById("adminServiceVehicleSelect");
+            const filterVehicle = document.getElementById("filterVehicle");
+
+            const currDriver = driverSelect.value;
+            const currAdmin = adminServiceSelect.value;
+            const currFilter = filterVehicle.value;
+
+            driverSelect.innerHTML = `<option value="">-- اختر رقم أو اسم الآلية --</option>`;
+            adminServiceSelect.innerHTML = `<option value="">-- اختر الآلية لتسجيل الصيانة --</option>`;
+            filterVehicle.innerHTML = `<option value="">جميع الآليات</option>`;
+
+            window.vehicles.forEach(v => {
+                const opt1 = `<option value="${v.code}">#${v.code} - ${v.name} (${v.driver})</option>`;
+                const opt2 = `<option value="${v.code}">#${v.code} - ${v.name}</option>`;
+
+                driverSelect.innerHTML += opt1;
+                adminServiceSelect.innerHTML += opt1;
+                filterVehicle.innerHTML += opt2;
+            });
+
+            if (currDriver) driverSelect.value = currDriver;
+            if (currAdmin) adminServiceSelect.value = currAdmin;
+            if (currFilter) filterVehicle.value = currFilter;
+        }
+
+        window.promptAdminLoginModal = function() {
+            document.getElementById("adminPinInput").value = "";
+            document.getElementById("modalAdminAuth").classList.remove("hidden");
+            setTimeout(() => document.getElementById("adminPinInput").focus(), 100);
+        }
+
+        window.closeAdminAuthModal = function() {
+            document.getElementById("modalAdminAuth").classList.add("hidden");
+        }
+
+        window.handleAdminLoginSubmit = function(e) {
+            e.preventDefault();
+            const pin = document.getElementById("adminPinInput").value;
+            if (pin === adminPassword) {
+                currentRole = "admin";
+                closeAdminAuthModal();
+                updateRoleUI();
+            } else {
+                alert("رمز الدخول غير صحيح!");
+            }
+        }
+
+        window.switchToDriverMode = function() {
+            currentRole = "driver";
+            updateRoleUI();
+        }
+
+        function updateRoleUI() {
+            const adminTabNav = document.getElementById("adminTabNav");
+            const viewDriver = document.getElementById("view-driver");
+            const roleBadge = document.getElementById("roleBadge");
+            const roleText = document.getElementById("roleText");
+            const adminLoginHeaderBtn = document.getElementById("adminLoginHeaderBtn");
+            const exitAdminBtn = document.getElementById("exitAdminBtn");
+
+            if (currentRole === "admin") {
+                roleBadge.className = "hidden sm:inline-flex px-3 py-1.5 text-xs font-extrabold rounded-full bg-slate-900 text-slate-200 border border-slate-700 items-center gap-1.5";
+                roleText.innerText = "الإدارة";
+                adminTabNav.classList.remove("hidden");
+                viewDriver.classList.add("hidden");
+                adminLoginHeaderBtn.classList.add("hidden");
+                exitAdminBtn.classList.remove("hidden");
+                switchTab('service');
+            } else {
+                roleBadge.className = "hidden sm:inline-flex px-3 py-1.5 text-xs font-extrabold rounded-full bg-slate-900 text-amber-300 border border-amber-700 items-center gap-1.5";
+                roleText.innerText = "السائق";
+                adminTabNav.classList.add("hidden");
+                document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+                viewDriver.classList.remove("hidden");
+                adminLoginHeaderBtn.classList.remove("hidden");
+                exitAdminBtn.classList.add("hidden");
+            }
+            populateAllVehicleSelects();
+            renderDashboardStats();
+            renderVehiclesTable();
+        }
+
+        window.onAdminServiceSelectVehicle = function() {
+            const code = document.getElementById("adminServiceVehicleSelect").value;
+            const overview = document.getElementById("adminServiceOverview");
+            const odoInput = document.getElementById("adminServiceOdometer");
+            
+            odoInput.value = "";
+            document.getElementById("adminServiceCalcCard").classList.add("hidden");
+            document.getElementById("adminServiceSubmitBtn").disabled = true;
+
+            if (!code) {
+                overview.classList.add("hidden");
+                return;
+            }
+
+            const v = window.vehicles.find(item => item.code === code);
+            if (!v) return;
+
+            document.getElementById("svcOverviewName").innerText = v.name;
+            document.getElementById("svcOverviewDriver").innerText = v.driver;
+            document.getElementById("svcOverviewOldOdo").innerText = v.lastOilOdometer.toLocaleString() + " كم";
+            document.getElementById("svcOverviewInterval").innerText = v.oilInterval.toLocaleString() + " كم";
+
+            overview.classList.remove("hidden");
+        }
+
+        window.calculateAdminServiceResult = function() {
+            const code = document.getElementById("adminServiceVehicleSelect").value;
+            const odoVal = Number(document.getElementById("adminServiceOdometer").value);
+            const card = document.getElementById("adminServiceCalcCard");
+            const badge = document.getElementById("svcCalcBadge");
+            const title = document.getElementById("svcCalcTitle");
+            const sub = document.getElementById("svcCalcSub");
+            const btn = document.getElementById("adminServiceSubmitBtn");
+
+            if (!code || !odoVal || odoVal <= 0) {
+                card.classList.add("hidden");
+                btn.disabled = true;
+                btn.className = "w-full py-4 bg-slate-300 text-slate-500 rounded-2xl text-base font-black shadow-lg transition flex items-center justify-center gap-3 cursor-not-allowed";
+                return;
+            }
+
+            const v = window.vehicles.find(item => item.code === code);
+            if (!v) return;
+
+            const nextDue = Number(v.lastOilOdometer) + Number(v.oilInterval);
+            const diff = odoVal - nextDue;
+
+            card.classList.remove("hidden");
+            btn.disabled = false;
+            btn.className = "w-full py-4 bg-brand-600 hover:bg-brand-700 text-white rounded-2xl text-base font-black shadow-lg transition flex items-center justify-center gap-3 cursor-pointer";
+
+            if (diff > 0) {
+                card.className = "p-5 rounded-2xl text-center space-y-2 border-2 bg-rose-50 border-rose-300 text-rose-950";
+                badge.className = "inline-block px-4 py-1 rounded-full text-xs font-black bg-rose-200 text-rose-900 border border-rose-400";
+                badge.innerText = "متجاوز للاستحقاق";
+                title.innerText = `متجاوز بمقدار ${diff.toLocaleString()} كم`;
+                sub.innerText = `عداد الاستحقاق المعتمد كان: ${nextDue.toLocaleString()} كم.`;
+            } else if (diff === 0 || Math.abs(diff) <= 150) {
+                card.className = "p-5 rounded-2xl text-center space-y-2 border-2 bg-amber-50 border-amber-300 text-amber-950";
+                badge.className = "inline-block px-4 py-1 rounded-full text-xs font-black bg-amber-200 text-amber-900 border border-amber-400";
+                badge.innerText = "حان موعد التبديل";
+                title.innerText = "وصل العداد للموعد المباشر";
+                sub.innerText = `عداد الاستحقاق المعتمد: ${nextDue.toLocaleString()} كم.`;
+            } else {
+                const remaining = Math.abs(diff);
+                card.className = "p-5 rounded-2xl text-center space-y-2 border-2 bg-emerald-50 border-emerald-300 text-emerald-950";
+                badge.className = "inline-block px-4 py-1 rounded-full text-xs font-black bg-emerald-200 text-emerald-900 border border-emerald-400";
+                badge.innerText = "لم يحن الموعد بعد";
+                title.innerText = `متبقي ${remaining.toLocaleString()} كم`;
+                sub.innerText = `عداد الاستحقاق القادم: ${nextDue.toLocaleString()} كم.`;
+            }
+        }
+
+        window.submitAdminServiceAndPrint = async function() {
+            const code = document.getElementById("adminServiceVehicleSelect").value;
+            const oilType = document.getElementById("adminServiceOilType").value.trim() || "قياسي";
+            const filterRadio = document.querySelector('input[name="filterChanged"]:checked');
+            const filterVal = filterRadio ? filterRadio.value : "نعم";
+            const newOdo = Number(document.getElementById("adminServiceOdometer").value);
+
+            const v = window.vehicles.find(item => item.code === code);
+            if (!v || !newOdo) return;
+
+            if (newOdo < v.lastOilOdometer) {
+                alert("العداد الحالي لا يمكن أن يكون أقل من العداد المعتمَد السابق!");
+                return;
+            }
+
+            const oldLastOil = v.lastOilOdometer;
+            const computedOld = computeVehicleStatus(v);
+
+            v.lastOilOdometer = newOdo;
+            v.lastCheckOdometer = newOdo;
+            v.lastCheckDate = new Date().toISOString();
+
+            // Save updated vehicle to Firestore
+            await setDoc(doc(db, "vehicles", v.code), v);
+
+            const computedNew = computeVehicleStatus(v);
+            const recId = "REC-" + Math.floor(1000 + Math.random() * 9000);
+            const printTime = new Date().toLocaleString("ar-EG");
+
+            const recordObj = {
+                id: recId,
+                timestamp: new Date().toISOString(),
+                vehicleCode: v.code,
+                vehicleName: v.name,
+                driverName: v.driver,
+                opType: "صيانة واعتماد عداد",
+                oilType: oilType,
+                filterChanged: filterVal,
+                lastOilOdometer: oldLastOil,
+                recordedOdometer: newOdo,
+                nextDueOdometer: computedNew.nextDue,
+                oilInterval: v.oilInterval,
+                diffKm: newOdo - computedOld.nextDue,
+                status: computedNew.status,
+                executor: "الإدارة"
+            };
+
+            // Save record to Firestore
+            await setDoc(doc(db, "records", recId), recordObj);
+
+            activeReceiptData = { recId, printTime, v, recordObj, computedOld };
+
+            const diffText = computedOld.diff > 0 
+                ? `متجاوز بمقدار: ${computedOld.diff.toLocaleString()} كم`
+                : `متبقي: ${Math.abs(computedOld.diff).toLocaleString()} كم`;
+
+            const receiptHTML = `
+                <div class="text-center border-b-2 border-dashed border-slate-400 pb-3 mb-2">
+                    <strong class="text-sm block text-slate-950 font-black">معامل القالب للكونكريت</strong>
+                    <span class="text-xs text-slate-800">وصل صيانة وتبديل زيت المحرك</span><br>
+                    <small class="text-brand-700 font-black">#${recId}</small>
+                </div>
+                <div class="space-y-1 border-b-2 border-dashed border-slate-400 pb-2 mb-2 text-slate-900">
+                    <div class="flex justify-between"><span>التاريخ:</span> <span>${printTime}</span></div>
+                    <div class="flex justify-between"><span>رقم الآلية:</span> <span class="font-black">#${v.code}</span></div>
+                    <div class="flex justify-between"><span>نوع الآلية:</span> <span>${v.name}</span></div>
+                    <div class="flex justify-between"><span>السائق:</span> <span>${v.driver}</span></div>
+                </div>
+                <div class="space-y-1 border-b-2 border-dashed border-slate-400 pb-2 mb-2 text-slate-900">
+                    <div class="flex justify-between"><span>نوع الزيت:</span> <span class="font-black">${oilType}</span></div>
+                    <div class="flex justify-between"><span>تبديل فلتر:</span> <span class="font-black">${filterVal}</span></div>
+                    <div class="flex justify-between"><span>العداد الجديد المعتمَد:</span> <span class="font-black">${newOdo.toLocaleString()} كم</span></div>
+                    <div class="flex justify-between"><span>مسافة الاستحقاق:</span> <span>${v.oilInterval.toLocaleString()} كم</span></div>
+                    <div class="flex justify-between"><span>الاستحقاق القادم Target:</span> <span class="font-black">${computedNew.nextDue.toLocaleString()} كم</span></div>
+                </div>
+                <div class="text-center my-2 p-2 bg-slate-200 rounded-xl font-black">
+                    <p class="text-xs">الحالة: ${computedOld.status}</p>
+                    <p class="text-xs">${diffText}</p>
+                </div>
+                <div class="pt-2 text-[11px] text-slate-600 text-center space-y-2 font-bold">
+                    <p>مصمم التطبيق: مهند صباح</p>
+                    <p class="pt-2">توقيع المسؤول: ....................</p>
+                </div>
+            `;
+
+            document.getElementById("receiptScreenPreview").innerHTML = receiptHTML;
+            document.getElementById("modalReceipt").classList.remove("hidden");
+        }
+
+        window.triggerPrintReceipt = function() {
+            if (!activeReceiptData) return;
+            const { recId, printTime, v, recordObj } = activeReceiptData;
+
+            const printTarget = document.getElementById("receipt-print-area");
+            printTarget.innerHTML = `
+                <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 5px; margin-bottom: 6px;">
+                    <strong style="font-size: 13px; display: block; font-weight: 900;">معامل القالب للكونكريت</strong>
+                    <span style="font-size: 11px; font-weight: 800;">وصل صيانة وتغيير زيت</span><br>
+                    <small style="font-size: 10px;">رقم الوصل: #${recId}</small>
+                </div>
+                <div style="border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 5px;">
+                    <div>التاريخ: ${printTime}</div>
+                    <div>الآلية: #${v.code} - ${v.name}</div>
+                    <div>السائق: ${v.driver}</div>
+                </div>
+                <div style="border-bottom: 1px dashed #000; padding-bottom: 4px; margin-bottom: 5px;">
+                    <div>نوع الزيت: ${recordObj.oilType}</div>
+                    <div>تبديل فلتر: ${recordObj.filterChanged}</div>
+                    <div>العداد المعتمَد: ${recordObj.recordedOdometer.toLocaleString()} كم</div>
+                    <div>مسافة الاستحقاق: ${recordObj.oilInterval.toLocaleString()} كم</div>
+                    <div>الاستحقاق القادم: ${recordObj.nextDueOdometer.toLocaleString()} كم</div>
+                </div>
+                <div style="text-align: center; font-weight: 900; margin: 6px 0;">
+                    الحالة: ${recordObj.status}<br>
+                    ${recordObj.diffKm > 0 ? 'متجاوز: ' + recordObj.diffKm.toLocaleString() + ' كم' : 'متبقي: ' + Math.abs(recordObj.diffKm).toLocaleString() + ' كم'}
+                </div>
+                <div style="margin-top: 10px; font-size: 10px; text-align: center;">
+                    <div>مصمم التطبيق: مهند صباح</div>
+                    <div style="margin-top: 15px;">التوقيع: ............................</div>
+                </div>
+            `;
+
+            window.print();
+            closeReceiptModal();
+        }
+
+        window.closeReceiptModal = function() {
+            document.getElementById("modalReceipt").classList.add("hidden");
+        }
+
+        window.onDriverSelectVehicle = function() {
+            const code = document.getElementById("driverVehicleSelect").value;
+            const infoBox = document.getElementById("driverVehicleInfoBox");
+            const resultBox = document.getElementById("driverResultBox");
+            const saveBtn = document.getElementById("driverSaveCheckBtn");
+            const odoInput = document.getElementById("driverOdometerInput");
+
+            odoInput.value = "";
+            resultBox.classList.add("hidden");
+            saveBtn.disabled = true;
+            saveBtn.className = "w-full py-4 bg-slate-300 text-slate-500 rounded-2xl text-base font-black shadow-md transition flex items-center justify-center gap-2 cursor-not-allowed";
+
+            if (!code) {
+                infoBox.classList.add("hidden");
+                return;
+            }
+
+            const v = window.vehicles.find(item => item.code === code);
+            if (!v) return;
+
+            const computed = computeVehicleStatus(v);
+
+            document.getElementById("driverInfoDriver").innerText = v.driver;
+            document.getElementById("driverInfoLastOil").innerText = v.lastOilOdometer.toLocaleString() + " كم";
+            document.getElementById("driverInfoInterval").innerText = v.oilInterval.toLocaleString() + " كم";
+            document.getElementById("driverInfoNextDue").innerText = computed.nextDue.toLocaleString() + " كم";
+
+            infoBox.classList.remove("hidden");
+        }
+
+        window.calculateDriverCheck = function() {
+            const code = document.getElementById("driverVehicleSelect").value;
+            const currentVal = Number(document.getElementById("driverOdometerInput").value);
+            const resultBox = document.getElementById("driverResultBox");
+            const badge = document.getElementById("driverStatusBadge");
+            const title = document.getElementById("driverResultTitle");
+            const sub = document.getElementById("driverResultSub");
+            const saveBtn = document.getElementById("driverSaveCheckBtn");
+
+            if (!code || !currentVal || currentVal <= 0) {
+                resultBox.classList.add("hidden");
+                saveBtn.disabled = true;
+                saveBtn.className = "w-full py-4 bg-slate-300 text-slate-500 rounded-2xl text-base font-black shadow-md transition flex items-center justify-center gap-2 cursor-not-allowed";
+                return;
+            }
+
+            const v = window.vehicles.find(item => item.code === code);
+            if (!v) return;
+
+            const nextDue = Number(v.lastOilOdometer) + Number(v.oilInterval);
+            const diff = currentVal - nextDue;
+
+            resultBox.classList.remove("hidden");
+            saveBtn.disabled = false;
+            saveBtn.className = "w-full py-4 bg-brand-600 hover:bg-brand-700 text-white rounded-2xl text-base font-black shadow-lg transition flex items-center justify-center gap-2 cursor-pointer";
+
+            if (diff > 0) {
+                resultBox.className = "p-5 rounded-2xl text-center space-y-2 border-2 bg-rose-50 border-rose-300 text-rose-950";
+                badge.className = "inline-block px-4 py-1 rounded-full text-xs font-black bg-rose-200 text-rose-900 border border-rose-400";
+                badge.innerText = "متجاوز للاستحقاق";
+                title.innerText = `تجاوزت الموعد بمقدار ${diff.toLocaleString()} كم`;
+                sub.innerText = "يرجى مراجعة ورشة الصيانة فوراً.";
+            } else if (diff === 0 || Math.abs(diff) <= 150) {
+                resultBox.className = "p-5 rounded-2xl text-center space-y-2 border-2 bg-amber-50 border-amber-300 text-amber-950";
+                badge.className = "inline-block px-4 py-1 rounded-full text-xs font-black bg-amber-200 text-amber-900 border border-amber-400";
+                badge.innerText = "حان موعد تبديل الزيت";
+                title.innerText = "حان موعد التبديل الآن!";
+                sub.innerText = "وصل العداد للمسافة المحددة.";
+            } else {
+                const remaining = Math.abs(diff);
+                resultBox.className = "p-5 rounded-2xl text-center space-y-2 border-2 bg-emerald-50 border-emerald-300 text-emerald-950";
+                badge.className = "inline-block px-4 py-1 rounded-full text-xs font-black bg-emerald-200 text-emerald-900 border border-emerald-400";
+                badge.innerText = "لم يحن الموعد بعد";
+                title.innerText = `متبقي ${remaining.toLocaleString()} كم`;
+                sub.innerText = `عداد الاستحقاق القادم: ${nextDue.toLocaleString()} كم.`;
+            }
+        }
+
+        window.saveDriverCheckRecord = async function() {
+            const code = document.getElementById("driverVehicleSelect").value;
+            const currentVal = Number(document.getElementById("driverOdometerInput").value);
+
+            const v = window.vehicles.find(item => item.code === code);
+            if (!v || !currentVal) return;
+
+            const computed = computeVehicleStatus({ ...v, lastCheckOdometer: currentVal });
+
+            v.lastCheckOdometer = currentVal;
+            v.lastCheckDate = new Date().toISOString();
+
+            await setDoc(doc(db, "vehicles", v.code), v);
+
+            const recId = "REC-" + Math.floor(1000 + Math.random() * 9000);
+            const recordObj = {
+                id: recId,
+                timestamp: new Date().toISOString(),
+                vehicleCode: v.code,
+                vehicleName: v.name,
+                driverName: v.driver,
+                opType: "فحص عداد",
+                oilType: "-",
+                filterChanged: "-",
+                lastOilOdometer: v.lastOilOdometer,
+                recordedOdometer: currentVal,
+                nextDueOdometer: computed.nextDue,
+                oilInterval: v.oilInterval,
+                diffKm: computed.diff,
+                status: computed.status,
+                executor: `${v.driver} (سائق)`
+            };
+
+            await setDoc(doc(db, "records", recId), recordObj);
+
+            alert(`تم فحص وتسجيل القراءة (${currentVal.toLocaleString()} كم) للآلية #${v.code}.`);
+        }
+
+        window.openAddVehicleModal = function() {
+            document.getElementById("modalVehicleTitle").innerText = "إضافة آلية جديدة";
+            document.getElementById("vFormOriginalCode").value = "";
+            document.getElementById("vFormCode").value = "";
+            document.getElementById("vFormName").value = "";
+            document.getElementById("vFormDriver").value = "";
+            document.getElementById("vFormLastOil").value = "";
+            document.getElementById("vFormInterval").value = "5000";
+            document.getElementById("vFormNotes").value = "";
+            document.getElementById("modalVehicle").classList.remove("hidden");
+        }
+
+        window.openEditVehicleModal = function(code) {
+            const v = window.vehicles.find(item => item.code === code);
+            if (!v) return;
+
+            document.getElementById("modalVehicleTitle").innerText = "تعديل بيانات الآلية";
+            document.getElementById("vFormOriginalCode").value = v.code;
+            document.getElementById("vFormCode").value = v.code;
+            document.getElementById("vFormName").value = v.name;
+            document.getElementById("vFormDriver").value = v.driver;
+            document.getElementById("vFormLastOil").value = v.lastOilOdometer;
+            document.getElementById("vFormInterval").value = v.oilInterval;
+            document.getElementById("vFormNotes").value = v.notes || "";
+            document.getElementById("modalVehicle").classList.remove("hidden");
+        }
+
+        window.closeVehicleModal = function() {
+            document.getElementById("modalVehicle").classList.add("hidden");
+        }
+
+        window.saveVehicleForm = async function(e) {
+            e.preventDefault();
+            const originalCode = document.getElementById("vFormOriginalCode").value;
+            const code = document.getElementById("vFormCode").value.trim();
+            const name = document.getElementById("vFormName").value.trim();
+            const driver = document.getElementById("vFormDriver").value.trim();
+            const lastOil = Number(document.getElementById("vFormLastOil").value);
+            const interval = Number(document.getElementById("vFormInterval").value);
+            const notes = document.getElementById("vFormNotes").value.trim();
+
+            if (!originalCode && window.vehicles.some(v => v.code === code)) {
+                alert("رمز الآلية مستخدم سابقاً!");
+                return;
+            }
+
+            if (originalCode && originalCode !== code) {
+                await deleteDoc(doc(db, "vehicles", originalCode));
+            }
+
+            const vehicleData = {
+                code,
+                name,
+                driver,
+                lastOilOdometer: lastOil,
+                oilInterval: interval,
+                lastCheckOdometer: originalCode ? (window.vehicles.find(v => v.code === originalCode)?.lastCheckOdometer || lastOil) : lastOil,
+                lastCheckDate: new Date().toISOString(),
+                notes
+            };
+
+            await setDoc(doc(db, "vehicles", code), vehicleData);
+            closeVehicleModal();
+        }
+
+        window.deleteVehicle = async function(code) {
+            if (confirm(`هل أنت تأكد من حذف الآلية #${code}؟`)) {
+                await deleteDoc(doc(db, "vehicles", code));
+            }
+        }
+
+        window.applyRecordsFilter = function() {
+            const search = document.getElementById("filterSearch").value.toLowerCase().trim();
+            const vehicleCode = document.getElementById("filterVehicle").value;
+            const opType = document.getElementById("filterOpType").value;
+            const status = document.getElementById("filterStatus").value;
+
+            let filtered = window.records.filter(r => {
+                if (search) {
+                    const match = (r.id + r.vehicleCode + r.vehicleName + r.driverName + (r.oilType || '')).toLowerCase();
+                    if (!match.includes(search)) return false;
+                }
+                if (vehicleCode && r.vehicleCode !== vehicleCode) return false;
+                if (opType && r.opType !== opType) return false;
+                if (status && r.status !== status) return false;
+                return true;
+            });
+
+            renderRecordsTable(filtered);
+        }
+
+        window.resetRecordsFilter = function() {
+            document.getElementById("filterSearch").value = "";
+            document.getElementById("filterVehicle").value = "";
+            document.getElementById("filterOpType").value = "";
+            document.getElementById("filterStatus").value = "";
+            applyRecordsFilter();
+        }
+
+        function renderRecordsTable(recordList) {
+            const tbody = document.getElementById("recordsTableBody");
+            document.getElementById("recordsFoundCount").innerText = recordList.length;
+            tbody.innerHTML = "";
+
+            if (recordList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" class="p-6 text-center text-slate-500 font-black">لا توجد سجلات مطابقة</td></tr>`;
+                return;
+            }
+
+            recordList.forEach(r => {
+                let badgeClass = "bg-emerald-100 text-emerald-900 border border-emerald-300";
+                if (r.status === "حان موعد تبديل الزيت") badgeClass = "bg-amber-100 text-amber-900 border border-amber-300";
+                if (r.status === "متجاوز للاستحقاق") badgeClass = "bg-rose-100 text-rose-900 border border-rose-300";
+
+                const dateStr = new Date(r.timestamp).toLocaleString("ar-EG");
+                const diffDisplay = r.diffKm > 0 ? `+${r.diffKm.toLocaleString()} كم (متجاوز)` : `${Math.abs(r.diffKm).toLocaleString()} كم (متبقي)`;
+
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50 transition border-b border-slate-200 text-slate-900";
+                tr.innerHTML = `
+                    <td class="p-3 font-mono font-black text-brand-700">${r.id}</td>
+                    <td class="p-3 text-slate-700 font-bold">${dateStr}</td>
+                    <td class="p-3 font-black">#${r.vehicleCode} - ${r.vehicleName}</td>
+                    <td class="p-3"><span class="px-2 py-1 rounded bg-slate-200 text-slate-900 text-[11px] font-black">${r.opType}</span></td>
+                    <td class="p-3 font-black text-brand-800">${r.oilType || '-'}</td>
+                    <td class="p-3">${r.filterChanged || '-'}</td>
+                    <td class="p-3 font-mono font-black">${r.recordedOdometer.toLocaleString()} كم</td>
+                    <td class="p-3 font-mono text-slate-800">${diffDisplay}</td>
+                    <td class="p-3"><span class="px-2.5 py-0.5 rounded-full text-[10px] font-black ${badgeClass}">${r.status}</span></td>
+                    <td class="p-3 text-center">
+                        <button onclick="viewRecordDetail('${r.id}')" class="text-brand-700 hover:text-brand-900 font-black">
+                            <i class="fa-solid fa-eye text-base"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.viewRecordDetail = function(id) {
+            const r = window.records.find(item => item.id === id);
+            if (!r) return;
+
+            const content = document.getElementById("recordDetailContent");
+            content.innerHTML = `
+                <div class="bg-slate-100 p-4 rounded-2xl border-2 border-slate-300 space-y-2">
+                    <p><strong>معرف السجل / الوصل:</strong> ${r.id}</p>
+                    <p><strong>التاريخ والوقت:</strong> ${new Date(r.timestamp).toLocaleString('ar-EG')}</p>
+                    <p><strong>نوع العملية:</strong> ${r.opType}</p>
+                    <p><strong>الآلية:</strong> #${r.vehicleCode} - ${r.vehicleName}</p>
+                    <p><strong>السائق:</strong> ${r.driverName}</p>
+                    <p><strong>نوع الزيت:</strong> ${r.oilType || '-'}</p>
+                    <p><strong>تبديل فلتر:</strong> ${r.filterChanged || '-'}</p>
+                    <p><strong>العداد عند التبديل المعتمَد:</strong> ${r.lastOilOdometer.toLocaleString()} كم</p>
+                    <p><strong>القراءة المسجلة بالعملية:</strong> ${r.recordedOdometer.toLocaleString()} كم</p>
+                    <p><strong>مسافة الاستحقاق:</strong> ${r.oilInterval.toLocaleString()} كم</p>
+                    <p><strong>الاستحقاق القادم Target:</strong> ${r.nextDueOdometer.toLocaleString()} كم</p>
+                    <p><strong>الحالة:</strong> ${r.status}</p>
+                    <p><strong>المُنفِّذ المسؤول:</strong> ${r.executor || 'الإدارة'}</p>
+                </div>
+            `;
+            document.getElementById("modalRecordDetail").classList.remove("hidden");
+        }
+
+        window.closeRecordDetailModal = function() {
+            document.getElementById("modalRecordDetail").classList.add("hidden");
+        }
+
+        window.handlePasswordChange = function(e) {
+            e.preventDefault();
+            const curr = document.getElementById("currentPassInput").value;
+            const newP = document.getElementById("newPassInput").value;
+
+            if (curr !== adminPassword) {
+                alert("كلمة المرور الحالية غير صحيحة!");
+                return;
+            }
+
+            adminPassword = newP;
+            alert("تم تغيير كلمة المرور بنجاح.");
+            document.getElementById("currentPassInput").value = "";
+            document.getElementById("newPassInput").value = "";
+        }
+
+        window.exportDataJSON = function() {
+            const data = { vehicles: window.vehicles, records: window.records, exportDate: new Date().toISOString() };
+            const jsonStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `qalib_concrete_oil_backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        window.restoreDefaultData = async function() {
+            if (confirm("هل أنت تأكد من استعادة البيانات الافتراضية؟")) {
+                for (let v of DEFAULT_VEHICLES) {
+                    await setDoc(doc(db, "vehicles", v.code), v);
+                }
+                alert("تمت استعادة البيانات الافتراضية بنجاح.");
+            }
+        }
+    </script>
+</body>
+</html>
