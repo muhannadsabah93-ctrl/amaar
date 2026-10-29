@@ -698,6 +698,10 @@
                 snapshot.forEach((docSnap) => {
                     window.vehicles.push(docSnap.data());
                 });
+                
+                // ترتيب الآليات أبجدياً أو حسب الرمز (LocaleCompare يدعم الحروف العربية والأرقام)
+                window.vehicles.sort((a, b) => String(a.code).localeCompare(String(b.code), 'ar', { numeric: true }));
+
                 if (window.vehicles.length === 0) {
                     DEFAULT_VEHICLES.forEach(async (v) => {
                         await setDoc(doc(db, "vehicles", v.code), v);
@@ -717,6 +721,8 @@
         }
 
         window.renderAllViews = function() {
+            // ضمان الترتيب الدائم للقائمة قبل كل عملية عرض
+            window.vehicles.sort((a, b) => String(a.code).localeCompare(String(b.code), 'ar', { numeric: true }));
             populateAllVehicleSelects();
             renderDashboardStats();
             renderVehiclesTable();
