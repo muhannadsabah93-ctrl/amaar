@@ -135,7 +135,6 @@
                         <option value="">-- اختر الآلية / السائق --</option>
                     </select>
 
-                    <!-- إظهار المتبقي مباشرةً تحت اسم الآلية المختارة -->
                     <div id="remainingBadgeWrapper" class="hidden mt-3 p-3 rounded-xl border bg-slate-900/80 flex items-center justify-between">
                         <span id="remainingBadgeLabel" class="text-xs text-slate-300 font-bold">عدد الساعات المتبقية للاستحقاق:</span>
                         <span id="remainingBadgeValue" class="text-sm font-black font-mono">--</span>
@@ -145,12 +144,13 @@
                 <!-- Vehicle Info Banner -->
                 <div id="driverVehicleInfoBox" class="hidden bg-slate-900/90 p-4 rounded-2xl border border-slate-700 text-xs space-y-2.5">
                     <div class="flex justify-between border-b border-slate-800 pb-1.5"><span class="text-slate-400">اسم السائق:</span><span id="dInfoDriver" class="text-white font-black text-sm">-</span></div>
+                    <div id="dInfoOperatorRow" class="flex justify-between border-b border-slate-800 pb-1.5"><span class="text-slate-400">اسم المشغل:</span><span id="dInfoOperator" class="text-white font-black text-sm">-</span></div>
                     <div class="flex justify-between border-b border-slate-800 pb-1.5"><span class="text-slate-400">تاريخ التبديل السابق:</span><span id="dInfoLastDate" class="text-slate-300 font-bold">-</span></div>
                     <div class="flex justify-between border-b border-slate-800 pb-1.5"><span class="text-slate-400">عداد التبديل السابق:</span><span id="dInfoLastVal" class="text-sky-400 font-black text-sm">-</span></div>
                     <div class="flex justify-between"><span class="text-slate-400">عداد الاستحقاق القادم:</span><span id="dInfoTargetVal" class="text-amber-400 font-black text-sm">-</span></div>
                 </div>
 
-                <!-- حقول خاصة بنظام الساعات مع تحسين وقت البدء والانتهاء بصباحاً / مساءً -->
+                <!-- Hours Specific Inputs -->
                 <div id="hoursSpecificInputs" class="space-y-4 hidden">
                     <div>
                         <label class="block text-xs font-black text-slate-300 mb-1">اسم الموقع:</label>
@@ -162,7 +162,6 @@
                     </div>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800">
-                        <!-- وقت البدء (من) -->
                         <div>
                             <label class="block text-xs font-black text-sky-400 mb-1.5"><i class="fa-regular fa-clock ml-1"></i> من الساعة (وقت الدخول):</label>
                             <div class="flex gap-1">
@@ -181,7 +180,6 @@
                             </div>
                         </div>
 
-                        <!-- وقت الانتهاء (إلى) -->
                         <div>
                             <label class="block text-xs font-black text-amber-400 mb-1.5"><i class="fa-regular fa-clock ml-1"></i> إلى الساعة (وقت الخروج):</label>
                             <div class="flex gap-1">
@@ -202,7 +200,7 @@
                     </div>
                 </div>
 
-                <!-- حقل العداد الحالي يظهر فقط في نظام الكيلومتر ويختفي تماماً في نظام الساعات -->
+                <!-- KM Specific Inputs -->
                 <div id="kmInputWrapper">
                     <label id="lblCurrentInput" class="block text-xs font-black text-slate-300 mb-1">أدخل العداد الحالي للسيارة (كم):</label>
                     <input type="number" id="driverCurrentValInput" oninput="calculateDriverStatus()" placeholder="أدخل العداد الحالي الموجود في السيارة" class="w-full p-3.5 text-lg font-black rounded-xl bg-slate-900 border-2 border-slate-700 text-white focus:border-sky-500 outline-none">
@@ -252,8 +250,7 @@
                             <input type="text" id="vName" required placeholder="شفل كوماتسو" class="w-full p-2.5 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
                         </div>
                         
-                        <!-- إخفاء حقل خيار النظام تلقائياً عند التواجد بالنظام المحدد لمنع التداخل -->
-                        <div id="vSystemTypeWrapper">
+                        <div id="vSystemTypeWrapper" class="hidden">
                             <label class="block text-xs text-slate-400 mb-1">نظام العمل</label>
                             <select id="vSystemType" class="w-full p-2.5 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
                                 <option value="hours">نظام الساعات</option>
@@ -265,7 +262,8 @@
                             <label class="block text-xs text-slate-400 mb-1">اسم السائق</label>
                             <input type="text" id="vDriver" required placeholder="اسم السائق" class="w-full p-2.5 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
                         </div>
-                        <div>
+                        <!-- حقل المشغل يظهر فقط في نظام الساعات ويختفي في نظام الكيلومتر -->
+                        <div id="vOperatorWrapper">
                             <label class="block text-xs text-slate-400 mb-1">اسم المشغل</label>
                             <input type="text" id="vOperator" placeholder="اسم المشغل" class="w-full p-2.5 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
                         </div>
@@ -294,7 +292,7 @@
                             <tr>
                                 <th class="p-3">الرمز</th>
                                 <th class="p-3">اسم الآلية</th>
-                                <th class="p-3">السائق / المشغل</th>
+                                <th id="thAdminDriverHeader" class="p-3">السائق / المشغل</th>
                                 <th id="thAdminOdoHeader" class="p-3">العداد المعتمد</th>
                                 <th id="thAdminIntervalHeader" class="p-3">حد الاستحقاق</th>
                                 <th class="p-3">آخر تاريخ صيانة</th>
@@ -399,6 +397,7 @@
                             <tr>
                                 <th class="p-3">ت</th>
                                 <th class="p-3">الآلية</th>
+                                <th id="thRecordsOperatorHeader" class="p-3">السائق / المشغل</th>
                                 <th class="p-3">نوع العملية</th>
                                 <th id="thRecordsValHeader" class="p-3">القراءة / التفاصيل</th>
                                 <th id="thRecordsSiteHeader" class="p-3">الموقع / وقت التشغيل</th>
@@ -442,7 +441,7 @@
                 <tr>
                     <th>ت</th>
                     <th>رمز واسم الآلية</th>
-                    <th>السائق / المشغل</th>
+                    <th id="thPrintDriverHeader">السائق / المشغل</th>
                     <th>نوع العملية</th>
                     <th id="thPrintValHeader">القراءة المسجلة</th>
                     <th id="thPrintSiteHeader">الموقع / التفاصيل</th>
@@ -474,7 +473,7 @@
         let windowVehicles = [];
         let windowRecords = [];
         let filteredRecords = [];
-        let currentSystem = 'km'; // افتراضي
+        let currentSystem = 'km'; 
         let currentRole = '';
 
         window.onload = function() {
@@ -519,19 +518,23 @@
             
             const hoursInputs = document.getElementById('hoursSpecificInputs');
             const kmInputWrapper = document.getElementById('kmInputWrapper');
+            const vOperatorWrapper = document.getElementById('vOperatorWrapper');
+            const dInfoOperatorRow = document.getElementById('dInfoOperatorRow');
 
-            // إخفاء/إظهار الحقول المخصصة في واجهة السائق
             if (sysType === 'hours') {
                 hoursInputs.classList.remove('hidden');
                 kmInputWrapper.classList.add('hidden');
+                if(vOperatorWrapper) vOperatorWrapper.classList.remove('hidden');
+                if(dInfoOperatorRow) dInfoOperatorRow.classList.remove('hidden');
             } else {
                 hoursInputs.classList.add('hidden');
                 kmInputWrapper.classList.remove('hidden');
+                // عزل وإخفاء اسم المشغل تماماً من نظام الكيلومتر
+                if(vOperatorWrapper) vOperatorWrapper.classList.add('hidden');
+                if(dInfoOperatorRow) dInfoOperatorRow.classList.add('hidden');
             }
 
-            // تكييف نصوص وعناوين لوحة التحكم وإعادة تعيين الحقول حسب النظام المختار
             updateAdminLabelsForSystem();
-
             populateDriverSelect();
             switchView('driver');
         };
@@ -539,28 +542,29 @@
         function updateAdminLabelsForSystem() {
             const isHours = currentSystem === 'hours';
 
-            // عناوين إضافة وإدارة الآليات
             const lblVLastOdo = document.getElementById('lblVLastOdo');
             const lblVInterval = document.getElementById('lblVInterval');
             const thAdminOdoHeader = document.getElementById('thAdminOdoHeader');
             const thAdminIntervalHeader = document.getElementById('thAdminIntervalHeader');
             const lblSvcNewOdo = document.getElementById('lblSvcNewOdo');
-            const vSystemTypeWrapper = document.getElementById('vSystemTypeWrapper');
 
             if (lblVLastOdo) lblVLastOdo.innerText = isHours ? "عدد الساعات المعتمد الحالي" : "عداد الكيلومتر المعتمد الحالي";
             if (lblVInterval) lblVInterval.innerText = isHours ? "حد ساعات الاستحقاق (ساعة)" : "حد الكيلومترات للاستحقاق (كم)";
             if (thAdminOdoHeader) thAdminOdoHeader.innerText = isHours ? "الساعات المعتمدة" : "العداد الحالي (كم)";
             if (thAdminIntervalHeader) thAdminIntervalHeader.innerText = isHours ? "حد ساعات الصيانة" : "حد مسافة الصيانة";
             if (lblSvcNewOdo) lblSvcNewOdo.innerText = isHours ? "العداد الجديد (بالساعات):" : "العداد الجديد (بالكيلومتر):";
-            
-            // إخفاء اختيار نوع النظام في النموذج عند التواجد بداخل نظام مخصص
-            if (vSystemTypeWrapper) vSystemTypeWrapper.classList.add('hidden');
 
-            // عناوين جدول السجلات والتقارير
             const thRecordsValHeader = document.getElementById('thRecordsValHeader');
             const thRecordsSiteHeader = document.getElementById('thRecordsSiteHeader');
             const thPrintValHeader = document.getElementById('thPrintValHeader');
             const thPrintSiteHeader = document.getElementById('thPrintSiteHeader');
+            const thAdminDriverHeader = document.getElementById('thAdminDriverHeader');
+            const thRecordsOperatorHeader = document.getElementById('thRecordsOperatorHeader');
+            const thPrintDriverHeader = document.getElementById('thPrintDriverHeader');
+
+            if (thAdminDriverHeader) thAdminDriverHeader.innerText = isHours ? "السائق / المشغل" : "اسم السائق";
+            if (thRecordsOperatorHeader) thRecordsOperatorHeader.innerText = isHours ? "السائق / المشغل" : "اسم السائق";
+            if (thPrintDriverHeader) thPrintDriverHeader.innerText = isHours ? "السائق / المشغل" : "اسم السائق";
 
             if (thRecordsValHeader) thRecordsValHeader.innerText = isHours ? "كمية التجهيز (m³)" : "قراءة العداد (كم)";
             if (thRecordsSiteHeader) thRecordsSiteHeader.innerText = isHours ? "الموقع / أوقات التشغيل" : "حالة الفحص";
@@ -573,13 +577,11 @@
             if(!select) return;
             select.innerHTML = '<option value="">-- اختر الآلية / السائق --</option>';
             
-            // عزل تام للآليات حسب النظام الحالي المختار
             const filtered = windowVehicles.filter(v => (v.systemType || 'km') === currentSystem);
             filtered.forEach(v => {
                 select.innerHTML += `<option value="${v.code}">رمز الآلية: ${v.code} - السائق: ${v.driver || 'غير محدد'}</option>`;
             });
 
-            // إخفاء الـ Badge عند تغيير خيارات النظام
             const badgeWrapper = document.getElementById('remainingBadgeWrapper');
             if(badgeWrapper) badgeWrapper.classList.add('hidden');
         }
@@ -619,7 +621,6 @@
             const lastCheck = Number(v.lastCheckVal) || lastVal;
             const remaining = targetVal - lastCheck;
 
-            // تحديث بطاقة الشعار المباشرة تحت خيار اسم الآلية
             if (badgeWrapper && badgeLabel && badgeValue) {
                 badgeLabel.innerText = currentSystem === 'hours' ? 'عدد الساعات المتبقية للاستحقاق:' : 'الكيلومترات المتبقية للاستحقاق:';
                 
@@ -640,6 +641,9 @@
             }
 
             document.getElementById('dInfoDriver').innerText = v.driver || '-';
+            const dInfoOp = document.getElementById('dInfoOperator');
+            if(dInfoOp) dInfoOp.innerText = v.operator || '-';
+
             document.getElementById('dInfoLastDate').innerText = v.lastOilDate || '-';
             document.getElementById('dInfoLastVal').innerText = lastVal.toLocaleString() + ' ' + unit;
             document.getElementById('dInfoTargetVal').innerText = targetVal.toLocaleString() + ' ' + unit;
@@ -708,7 +712,6 @@
                 val = Number(document.getElementById('driverCurrentValInput').value);
                 if (!val) return;
             } else {
-                // تجميع أوقات الصباح والمساء لنظام الساعات
                 const hFrom = document.getElementById('driverTimeFromHour')?.value || '08';
                 const mFrom = document.getElementById('driverTimeFromMin')?.value || '00';
                 const pFrom = document.getElementById('driverTimeFromPeriod')?.value || 'صباحاً';
@@ -732,7 +735,8 @@
                 quantity: document.getElementById('driverQtyInput')?.value || '-',
                 timeRange: timeRangeStr,
                 driver: v.driver,
-                operator: v.operator || '-'
+                // حفظ اسم المشغل فقط إذا كان النظام نظام ساعات
+                operator: currentSystem === 'hours' ? (v.operator || '-') : ''
             };
 
             await setDoc(doc(db, "records", recId), recordObj);
@@ -786,8 +790,6 @@
             document.getElementById('logoutBtn').classList.remove('hidden');
             switchView('admin');
             populateAdminVehiclesTable();
-            const vSysType = document.getElementById('vSystemType');
-            if(vSysType) vSysType.value = currentSystem;
         };
 
         window.logoutAdmin = function() {
@@ -826,9 +828,10 @@
             const vehicleData = {
                 code,
                 name: document.getElementById('vName').value.trim(),
-                systemType: currentSystem, // تثبيت نظام الآلية المختار بدون خلط
+                systemType: currentSystem, 
                 driver: document.getElementById('vDriver').value.trim(),
-                operator: document.getElementById('vOperator').value.trim(),
+                // حفظ وإرسال المشغل فقط في نظام الساعات، وتركها فارغة لنظام الكيلومتر
+                operator: currentSystem === 'hours' ? (document.getElementById('vOperator').value.trim() || '-') : '',
                 lastOilOdometer: Number(document.getElementById('vLastOdo').value) || 0,
                 oilInterval: Number(document.getElementById('vInterval').value) || (currentSystem === 'hours' ? 250 : 5000),
                 lastOilDate: document.getElementById('vLastDate').value
@@ -864,11 +867,14 @@
                     `;
                 }
 
+                // عرض عمود السائق/المشغل أو السائق فقط حسب النظام
+                const driverOperatorDisplay = currentSystem === 'hours' ? `${v.driver} / ${v.operator || '-'}` : v.driver;
+
                 tbody.innerHTML += `
                     <tr>
                         <td class="p-3 text-sky-400 font-mono">#${v.code}</td>
                         <td class="p-3 text-white">${v.name}</td>
-                        <td class="p-3">${v.driver} / ${v.operator || '-'}</td>
+                        <td class="p-3">${driverOperatorDisplay}</td>
                         <td class="p-3 font-mono">${v.lastOilOdometer} ${unit}</td>
                         <td class="p-3 font-mono text-amber-400">${v.oilInterval} ${unit}</td>
                         <td class="p-3 text-slate-400">${v.lastOilDate || '-'}</td>
@@ -886,7 +892,10 @@
             document.getElementById('vCode').value = v.code;
             document.getElementById('vName').value = v.name;
             document.getElementById('vDriver').value = v.driver;
-            document.getElementById('vOperator').value = v.operator || '';
+            
+            const vOp = document.getElementById('vOperator');
+            if(vOp) vOp.value = v.operator || '';
+
             document.getElementById('vLastOdo').value = v.lastOilOdometer;
             document.getElementById('vInterval').value = v.oilInterval;
             document.getElementById('vLastDate').value = v.lastOilDate || '';
@@ -905,7 +914,8 @@
             document.getElementById('vCode').value = '';
             document.getElementById('vName').value = '';
             document.getElementById('vDriver').value = '';
-            document.getElementById('vOperator').value = '';
+            const vOp = document.getElementById('vOperator');
+            if(vOp) vOp.value = '';
             document.getElementById('vLastOdo').value = '';
             document.getElementById('vInterval').value = '';
             document.getElementById('vFormTitle').innerText = 'إضافة آلية جديدة للقاعدة';
@@ -1008,7 +1018,7 @@
             const tbody = document.getElementById('recordsAdminTableBody');
             tbody.innerHTML = '';
             if (filteredRecords.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-500">لا توجد سجلات مطابقة للفلتر المخصص</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-500">لا توجد سجلات مطابقة للفلتر المخصص</td></tr>';
                 return;
             }
 
@@ -1019,6 +1029,7 @@
                 
                 let colValue = '-';
                 let colSiteInfo = '-';
+                let driverOperatorCol = isHours ? `${r.driver || '-'} / ${r.operator || '-'}` : (r.driver || '-');
 
                 if (isHours) {
                     colValue = r.quantity && r.quantity !== '-' ? `${r.quantity} m³` : 'سجل تشغيل';
@@ -1032,6 +1043,7 @@
                     <tr>
                         <td class="p-3">${index + 1}</td>
                         <td class="p-3 text-white">#${r.vehicleCode} - ${r.vehicleName}</td>
+                        <td class="p-3">${driverOperatorCol}</td>
                         <td class="p-3">${r.recordedVal || r.quantity ? 'تسجيل عمل' : 'صيانة'}</td>
                         <td class="p-3 font-mono text-sky-400">${colValue}</td>
                         <td class="p-3">${colSiteInfo}</td>
@@ -1065,6 +1077,7 @@
 
             filteredRecords.forEach((r, index) => {
                 const dateStr = new Date(r.timestamp).toLocaleString('ar-EG');
+                let driverOperatorCol = isHours ? `${r.driver || '-'} / ${r.operator || '-'}` : (r.driver || '-');
 
                 let colValue = isHours ? (r.quantity && r.quantity !== '-' ? `${r.quantity} m³` : '-') : `${r.recordedVal || '-'} كم`;
                 let colSiteInfo = isHours ? `${r.site || '-'} (${r.timeRange || '-'})` : 'فحص دوري';
@@ -1073,7 +1086,7 @@
                     <tr>
                         <td>${index + 1}</td>
                         <td>#${r.vehicleCode} - ${r.vehicleName}</td>
-                        <td>${r.driver || '-'} / ${r.operator || '-'}</td>
+                        <td>${driverOperatorCol}</td>
                         <td>${r.recordedVal || r.quantity ? 'فحص يومي' : 'صيانة'}</td>
                         <td>${colValue}</td>
                         <td>${colSiteInfo}</td>
