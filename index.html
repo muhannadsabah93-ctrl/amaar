@@ -150,11 +150,11 @@
 
                 <!-- Hours Specific Inputs -->
                 <div id="hoursSpecificInputs" class="space-y-4 hidden">
-                    <div>
+                    <div id="hoursSiteInputWrapper" class="hidden">
                         <label class="block text-xs font-black text-slate-300 mb-1">اسم الموقع:</label>
                         <input type="text" id="driverSiteInput" placeholder="أدخل اسم الموقع" class="w-full p-3 text-sm rounded-xl bg-slate-900 border border-slate-700 text-white outline-none">
                     </div>
-                    <div>
+                    <div id="hoursQtyInputWrapper" class="hidden">
                         <label class="block text-xs font-black text-slate-300 mb-1">كمية تجهيز الكونكريت (m³):</label>
                         <input type="number" id="driverQtyInput" placeholder="الكمية بالمتر المكعب" class="w-full p-3 text-sm rounded-xl bg-slate-900 border border-slate-700 text-white outline-none">
                     </div>
@@ -245,14 +245,14 @@
                         </div>
                         <div>
                             <label class="block text-xs text-slate-400 mb-1">اسم / نوع الآلية</label>
-                            <input type="text" id="vName" required placeholder="شفل كوماتسو" class="w-full p-2.5 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
+                            <input type="text" id="vName" required placeholder="مولدة 500 KVA / مضخة كونكريت" class="w-full p-2.5 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
                         </div>
                         
-                        <div id="vSystemTypeWrapper" class="hidden">
-                            <label class="block text-xs text-slate-400 mb-1">نظام العمل</label>
-                            <select id="vSystemType" class="w-full p-2.5 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
-                                <option value="hours">نظام الساعات</option>
-                                <option value="km">نظام الكيلومتر</option>
+                        <div id="vSubCategoryWrapper" class="hidden">
+                            <label class="block text-xs text-slate-400 mb-1">تصنيف الآلية (مولدة أم مضخة)</label>
+                            <select id="vSubCategory" class="w-full p-2.5 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
+                                <option value="generators">مولدة</option>
+                                <option value="pumps">مضخة</option>
                             </select>
                         </div>
 
@@ -563,25 +563,25 @@
                 if (serviceTabBtnLabel) serviceTabBtnLabel.innerText = "إيصال تبديل الزيت وتصفير الساعات";
                 if (serviceFormTitleHeader) serviceFormTitleHeader.innerText = "إيصال تبديل الزيت وتصفير الساعات";
                 if (serviceSubmitBtn) serviceSubmitBtn.innerText = "إصدار وطباعة إيصال تبديل الزيت وتصفير الساعات";
+                document.getElementById('vSubCategoryWrapper').classList.remove('hidden');
             } else {
                 if (serviceTabBtnLabel) serviceTabBtnLabel.innerText = "اعتماد الصيانة وتصفير العداد";
                 if (serviceFormTitleHeader) serviceFormTitleHeader.innerText = "اعتماد الصيانة وتصفير العداد (كيلومتر)";
                 if (serviceSubmitBtn) serviceSubmitBtn.innerText = "اعتماد الصيانة وطباعة الوصل";
+                document.getElementById('vSubCategoryWrapper').classList.add('hidden');
             }
 
             const hoursInputs = document.getElementById('hoursSpecificInputs');
             const kmInputWrapper = document.getElementById('kmInputWrapper');
-            const vOperatorWrapper = document.getElementById('vOperatorWrapper');
-            const dInfoOperatorRow = document.getElementById('dInfoOperatorRow');
 
             if (sysType === 'hours') {
                 hoursInputs.classList.remove('hidden');
                 kmInputWrapper.classList.add('hidden');
-                if(vOperatorWrapper) vOperatorWrapper.classList.remove('hidden');
-                if(dInfoOperatorRow) dInfoOperatorRow.classList.remove('hidden');
             } else {
                 hoursInputs.classList.add('hidden');
                 kmInputWrapper.classList.remove('hidden');
+                const vOperatorWrapper = document.getElementById('vOperatorWrapper');
+                const dInfoOperatorRow = document.getElementById('dInfoOperatorRow');
                 if(vOperatorWrapper) vOperatorWrapper.classList.add('hidden');
                 if(dInfoOperatorRow) dInfoOperatorRow.classList.add('hidden');
             }
@@ -630,8 +630,10 @@
             select.innerHTML = '<option value="">-- اختر الآلية / السائق --</option>';
             
             const filtered = windowVehicles.filter(v => (v.systemType || 'km') === currentSystem);
+
             filtered.forEach(v => {
-                select.innerHTML += `<option value="${v.code}">رمز الآلية: ${v.code} - السائق: ${v.driver || 'غير محدد'}</option>`;
+                const subCatText = (v.subCategory === 'generators') ? '[مولدة]' : ((v.subCategory === 'pumps') ? '[مضخة]' : '');
+                select.innerHTML += `<option value="${v.code}">${subCatText} رمز الآلية: ${v.code} - ${v.name} (${v.driver || 'غير محدد'})</option>`;
             });
 
             const badgeWrapper = document.getElementById('remainingBadgeWrapper');
@@ -655,14 +657,37 @@
                 submitBtn.className = "w-full py-4 bg-slate-700 text-slate-400 rounded-xl text-sm font-black transition cursor-not-allowed";
             }
 
+            const siteWrapper = document.getElementById('hoursSiteInputWrapper');
+            const qtyWrapper = document.getElementById('hoursQtyInputWrapper');
+            const vOperatorWrapper = document.getElementById('vOperatorWrapper');
+            const dInfoOperatorRow = document.getElementById('dInfoOperatorRow');
+
             if (!code) { 
                 if(infoBox) infoBox.classList.add('hidden'); 
                 if(badgeWrapper) badgeWrapper.classList.add('hidden');
+                if(siteWrapper) siteWrapper.classList.add('hidden');
+                if(qtyWrapper) qtyWrapper.classList.add('hidden');
                 return; 
             }
 
             const v = windowVehicles.find(item => item.code === code);
             if (!v) return;
+
+            // الفحص الذكي للآلية في نظام الساعات (مولدة أم مضخة)
+            if (currentSystem === 'hours') {
+                const isGenerator = (v.subCategory === 'generators');
+                if (isGenerator) {
+                    if(siteWrapper) siteWrapper.classList.add('hidden');
+                    if(qtyWrapper) qtyWrapper.classList.add('hidden');
+                    if(vOperatorWrapper) vOperatorWrapper.classList.add('hidden');
+                    if(dInfoOperatorRow) dInfoOperatorRow.classList.add('hidden');
+                } else {
+                    if(siteWrapper) siteWrapper.classList.remove('hidden');
+                    if(qtyWrapper) qtyWrapper.classList.remove('hidden');
+                    if(vOperatorWrapper) vOperatorWrapper.classList.remove('hidden');
+                    if(dInfoOperatorRow) dInfoOperatorRow.classList.remove('hidden');
+                }
+            }
 
             const unit = currentSystem === 'hours' ? 'ساعة' : 'كم';
             const lastVal = Number(v.lastOilOdometer) || 0;
@@ -681,7 +706,6 @@
             }
         };
 
-        // عرض النتيجة المتبقية مباشرة بدون عبارة "المتبقي للاستحقاق:"
         window.calculateDriverStatus = function() {
             if (currentSystem === 'hours') return;
 
@@ -798,18 +822,21 @@
             }
 
             const recId = "REC-" + Math.floor(1000 + Math.random() * 9000);
+            const isGenerator = currentSystem === 'hours' && v.subCategory === 'generators';
+
             const recordObj = {
                 id: recId,
                 timestamp: new Date().toISOString(),
                 vehicleCode: v.code,
                 vehicleName: v.name,
                 systemType: currentSystem,
+                subCategory: v.subCategory || 'generators',
                 recordedVal: val,
-                site: document.getElementById('driverSiteInput')?.value || '-',
-                quantity: document.getElementById('driverQtyInput')?.value || '-',
+                site: isGenerator ? '-' : (document.getElementById('driverSiteInput')?.value || '-'),
+                quantity: isGenerator ? '-' : (document.getElementById('driverQtyInput')?.value || '-'),
                 timeRange: timeRangeStr,
                 driver: v.driver,
-                operator: currentSystem === 'hours' ? (v.operator || '-') : ''
+                operator: isGenerator ? '-' : (v.operator || '-')
             };
 
             await setDoc(doc(db, "records", recId), recordObj);
@@ -822,8 +849,10 @@
             } else {
                 v.lastCheckVal = (Number(v.lastCheckVal) || Number(v.lastOilOdometer)) + calculatedHours;
                 await setDoc(doc(db, "vehicles", v.code), v);
-                document.getElementById('driverSiteInput').value = '';
-                document.getElementById('driverQtyInput').value = '';
+                if(!isGenerator) {
+                    document.getElementById('driverSiteInput').value = '';
+                    document.getElementById('driverQtyInput').value = '';
+                }
                 onDriverVehicleChange();
             }
 
@@ -839,16 +868,10 @@
             const formContainer = document.getElementById('vehicleFormContainer');
             const serviceBtn = document.getElementById('serviceSubmitBtn');
 
-            if (pin === '1993') {
+            if (pin === '1993' || pin === '1983') {
                 currentRole = 'admin';
-                badge.innerText = 'صلاحيات كاملة';
-                badge.className = "px-3 py-1 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg text-xs font-black";
-                if(formContainer) formContainer.classList.remove('hidden');
-                if(serviceBtn) serviceBtn.disabled = false;
-            } else if (pin === '1983') {
-                currentRole = 'editor';
-                badge.innerText = 'مدخل بيانات';
-                badge.className = "px-3 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-lg text-xs font-black";
+                badge.innerText = pin === '1993' ? 'صلاحيات كاملة (مدير)' : 'صلاحيات كاملة (مدخل بيانات)';
+                badge.className = "px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-lg text-xs font-black";
                 if(formContainer) formContainer.classList.remove('hidden');
                 if(serviceBtn) serviceBtn.disabled = false;
             } else if (pin === '2222') {
@@ -904,12 +927,15 @@
                 await deleteDoc(doc(db, "vehicles", originalCode));
             }
 
+            const subCat = currentSystem === 'hours' ? document.getElementById('vSubCategory').value : '';
+
             const vehicleData = {
                 code,
                 name: document.getElementById('vName').value.trim(),
-                systemType: currentSystem, 
+                systemType: currentSystem,
+                subCategory: subCat,
                 driver: document.getElementById('vDriver').value.trim(),
-                operator: currentSystem === 'hours' ? (document.getElementById('vOperator').value.trim() || '-') : '',
+                operator: (currentSystem === 'hours' && subCat === 'pumps') ? (document.getElementById('vOperator').value.trim() || '-') : '',
                 lastOilOdometer: Number(document.getElementById('vLastOdo').value) || 0,
                 oilInterval: Number(document.getElementById('vInterval').value) || (currentSystem === 'hours' ? 250 : 5000),
                 lastOilDate: document.getElementById('vLastDate').value
@@ -945,12 +971,12 @@
                     `;
                 }
 
-                const driverOperatorDisplay = currentSystem === 'hours' ? `${v.driver} / ${v.operator || '-'}` : v.driver;
+                const driverOperatorDisplay = currentSystem === 'hours' ? `${v.driver} ${v.operator && v.operator !== '-' ? '/ ' + v.operator : ''}` : v.driver;
 
                 tbody.innerHTML += `
                     <tr>
                         <td class="p-3 text-sky-400 font-mono">#${v.code}</td>
-                        <td class="p-3 text-white">${v.name}</td>
+                        <td class="p-3 text-white">${v.name} ${v.subCategory === 'generators' ? '(مولدة)' : (v.subCategory === 'pumps' ? '(مضخة)' : '')}</td>
                         <td class="p-3">${driverOperatorDisplay}</td>
                         <td class="p-3 font-mono">${v.lastOilOdometer} ${unit}</td>
                         <td class="p-3 font-mono text-amber-400">${v.oilInterval} ${unit}</td>
@@ -970,6 +996,11 @@
             document.getElementById('vName').value = v.name;
             document.getElementById('vDriver').value = v.driver;
             
+            if (currentSystem === 'hours') {
+                const subCatSelect = document.getElementById('vSubCategory');
+                if (subCatSelect) subCatSelect.value = v.subCategory || 'generators';
+            }
+
             const vOp = document.getElementById('vOperator');
             if(vOp) vOp.value = v.operator || '';
 
@@ -1235,11 +1266,12 @@
                 
                 let colValue = '-';
                 let colSiteInfo = '-';
-                let driverOperatorCol = isHours ? `${r.driver || '-'} / ${r.operator || '-'}` : (r.driver || '-');
+                let driverOperatorCol = isHours ? `${r.driver || '-'}${r.operator && r.operator !== '-' ? ' / ' + r.operator : ''}` : (r.driver || '-');
 
                 if (isHours) {
-                    colValue = `مدة: ${r.recordedVal || 0} س | كمية: ${r.quantity || '-'} m³`;
-                    colSiteInfo = `${r.site || '-'} (${r.timeRange || '-'})`;
+                    const isGen = r.subCategory === 'generators';
+                    colValue = isGen ? `مدة: ${r.recordedVal || 0} س` : `مدة: ${r.recordedVal || 0} س | كمية: ${r.quantity || '-'} m³`;
+                    colSiteInfo = isGen ? `وقت التشغيل: ${r.timeRange || '-'}` : `${r.site || '-'} (${r.timeRange || '-'})`;
                 } else {
                     colValue = r.recordedVal ? `${r.recordedVal} كم` : '-';
                     colSiteInfo = r.recordedVal ? 'تسجيل فحص يومي' : 'عملية صيانة';
@@ -1296,10 +1328,11 @@
 
             filteredRecords.forEach((r, index) => {
                 const dateStr = new Date(r.timestamp).toLocaleString('ar-EG');
-                let driverOperatorCol = isHours ? `${r.driver || '-'} / ${r.operator || '-'}` : (r.driver || '-');
+                let driverOperatorCol = isHours ? `${r.driver || '-'}${r.operator && r.operator !== '-' ? ' / ' + r.operator : ''}` : (r.driver || '-');
 
-                let colValue = isHours ? `مدة: ${r.recordedVal || 0} س | كمية: ${r.quantity || '-'} m³` : `${r.recordedVal || '-'} كم`;
-                let colSiteInfo = isHours ? `${r.site || '-'} (${r.timeRange || '-'})` : 'فحص دوري';
+                const isGen = r.subCategory === 'generators';
+                let colValue = isHours ? (isGen ? `مدة: ${r.recordedVal || 0} س` : `مدة: ${r.recordedVal || 0} س | كمية: ${r.quantity || '-'} m³`) : `${r.recordedVal || '-'} كم`;
+                let colSiteInfo = isHours ? (isGen ? `وقت التشغيل: ${r.timeRange || '-'}` : `${r.site || '-'} (${r.timeRange || '-'})`) : 'فحص دوري';
 
                 printBody.innerHTML += `
                     <tr>
