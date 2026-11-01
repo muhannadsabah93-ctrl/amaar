@@ -578,6 +578,7 @@
             select.innerHTML = '<option value="">-- اختر الآلية / السائق --</option>';
             
             const filtered = windowVehicles.filter(v => (v.systemType || 'km') === currentSystem);
+            filtered.sort((a, b) => (a.code || '').localeCompare(b.code || '', 'en', {numeric: true}));
             filtered.forEach(v => {
                 select.innerHTML += `<option value="${v.code}">رمز الآلية: ${v.code} - السائق: ${v.driver || 'غير محدد'}</option>`;
             });
@@ -735,7 +736,6 @@
                 quantity: document.getElementById('driverQtyInput')?.value || '-',
                 timeRange: timeRangeStr,
                 driver: v.driver,
-                // حفظ اسم المشغل فقط إذا كان النظام نظام ساعات
                 operator: currentSystem === 'hours' ? (v.operator || '-') : ''
             };
 
@@ -830,7 +830,6 @@
                 name: document.getElementById('vName').value.trim(),
                 systemType: currentSystem, 
                 driver: document.getElementById('vDriver').value.trim(),
-                // حفظ وإرسال المشغل فقط في نظام الساعات، وتركها فارغة لنظام الكيلومتر
                 operator: currentSystem === 'hours' ? (document.getElementById('vOperator').value.trim() || '-') : '',
                 lastOilOdometer: Number(document.getElementById('vLastOdo').value) || 0,
                 oilInterval: Number(document.getElementById('vInterval').value) || (currentSystem === 'hours' ? 250 : 5000),
@@ -854,6 +853,7 @@
             }
 
             const filteredVehicles = windowVehicles.filter(v => (v.systemType || 'km') === currentSystem);
+            filteredVehicles.sort((a, b) => (a.code || '').localeCompare(b.code || '', 'en', {numeric: true}));
             const unit = currentSystem === 'hours' ? 'ساعة' : 'كم';
 
             filteredVehicles.forEach((v) => {
@@ -867,7 +867,6 @@
                     `;
                 }
 
-                // عرض عمود السائق/المشغل أو السائق فقط حسب النظام
                 const driverOperatorDisplay = currentSystem === 'hours' ? `${v.driver} / ${v.operator || '-'}` : v.driver;
 
                 tbody.innerHTML += `
@@ -926,6 +925,7 @@
             if(!select) return;
             select.innerHTML = '<option value="">-- اختر الآلية --</option>';
             const filtered = windowVehicles.filter(v => (v.systemType || 'km') === currentSystem);
+            filtered.sort((a, b) => (a.code || '').localeCompare(b.code || '', 'en', {numeric: true}));
             filtered.forEach(v => {
                 select.innerHTML += `<option value="${v.code}">${v.code} - ${v.name}</option>`;
             });
@@ -989,6 +989,7 @@
             if(!select) return;
             select.innerHTML = '<option value="">كافة الآليات</option>';
             const filtered = windowVehicles.filter(v => (v.systemType || 'km') === currentSystem);
+            filtered.sort((a, b) => (a.code || '').localeCompare(b.code || '', 'en', {numeric: true}));
             filtered.forEach(v => {
                 select.innerHTML += `<option value="${v.code}">${v.code} - ${v.name}</option>`;
             });
