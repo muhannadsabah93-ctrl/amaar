@@ -135,19 +135,17 @@
                         <option value="">-- اختر الآلية / السائق --</option>
                     </select>
 
-                    <div id="remainingBadgeWrapper" class="hidden mt-3 p-3 rounded-xl border bg-slate-900/80 flex items-center justify-between">
-                        <span id="remainingBadgeLabel" class="text-xs text-slate-300 font-bold">عدد الساعات المتبقية للاستحقاق:</span>
-                        <span id="remainingBadgeValue" class="text-sm font-black font-mono">--</span>
+                    <div id="remainingBadgeWrapper" class="hidden mt-3 p-3 rounded-xl border bg-slate-900/80 flex items-center justify-center">
+                        <span id="remainingBadgeValue" class="text-base font-black font-mono">--</span>
                     </div>
                 </div>
 
                 <!-- Vehicle Info Banner -->
                 <div id="driverVehicleInfoBox" class="hidden bg-slate-900/90 p-4 rounded-2xl border border-slate-700 text-xs space-y-2.5">
                     <div class="flex justify-between border-b border-slate-800 pb-1.5"><span class="text-slate-400">اسم السائق:</span><span id="dInfoDriver" class="text-white font-black text-sm">-</span></div>
-                    <div id="dInfoOperatorRow" class="flex justify-between border-b border-slate-800 pb-1.5"><span class="text-slate-400">اسم المشغل:</span><span id="dInfoOperator" class="text-white font-black text-sm">-</span></div>
+                    <div id="dInfoOperatorRow" class="flex justify-between border-b border-slate-800 pb-1.5 hidden"><span class="text-slate-400">اسم المشغل:</span><span id="dInfoOperator" class="text-white font-black text-sm">-</span></div>
                     <div class="flex justify-between border-b border-slate-800 pb-1.5"><span class="text-slate-400">تاريخ التبديل السابق:</span><span id="dInfoLastDate" class="text-slate-300 font-bold">-</span></div>
-                    <div class="flex justify-between border-b border-slate-800 pb-1.5"><span class="text-slate-400">عداد التبديل السابق:</span><span id="dInfoLastVal" class="text-sky-400 font-black text-sm">-</span></div>
-                    <div class="flex justify-between"><span class="text-slate-400">عداد الاستحقاق القادم:</span><span id="dInfoTargetVal" class="text-amber-400 font-black text-sm">-</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">عداد التبديل السابق:</span><span id="dInfoLastVal" class="text-sky-400 font-black text-sm">-</span></div>
                 </div>
 
                 <!-- Hours Specific Inputs -->
@@ -231,7 +229,7 @@
             <!-- Admin Sub Tabs -->
             <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
                 <button onclick="switchAdminTab('vehicles')" id="atab-vehicles" class="px-4 py-2 rounded-xl text-xs font-black bg-sky-600 text-white shadow-md">إدارة الآليات المسجلة</button>
-                <button onclick="switchAdminTab('service')" id="serviceTabBtnLabel" class="px-4 py-2 rounded-xl text-xs font-black bg-slate-800 text-slate-300 hover:bg-slate-700">إيصال تبديل الزيت وتصفير الساعات</button>
+                <button onclick="switchAdminTab('service')" id="serviceTabBtnLabel" class="px-4 py-2 rounded-xl text-xs font-black bg-slate-800 text-slate-300 hover:bg-slate-700">اعتماد الصيانة وتصفير العداد</button>
                 <button onclick="switchAdminTab('records')" id="atab-records" class="px-4 py-2 rounded-xl text-xs font-black bg-slate-800 text-slate-300 hover:bg-slate-700">سجل القراءات والتقارير</button>
             </div>
 
@@ -267,7 +265,7 @@
                             <input type="text" id="vOperator" placeholder="اسم المشغل" class="w-full p-2.5 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
                         </div>
                         <div>
-                            <label id="lblVLastOdo" class="block text-xs text-slate-400 mb-1">العداد المعتمد الحالي</label>
+                            <label id="lblVLastOdo" class="block text-xs text-slate-400 mb-1">العداد السابق (تبديل الزيت)</label>
                             <input type="number" id="vLastOdo" required placeholder="0" class="w-full p-2.5 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
                         </div>
                         <div>
@@ -292,7 +290,7 @@
                                 <th class="p-3">الرمز</th>
                                 <th class="p-3">اسم الآلية</th>
                                 <th id="thAdminDriverHeader" class="p-3">السائق / المشغل</th>
-                                <th id="thAdminOdoHeader" class="p-3">العداد المعتمد</th>
+                                <th id="thAdminOdoHeader" class="p-3">العداد السابق</th>
                                 <th id="thAdminIntervalHeader" class="p-3">حد الاستحقاق</th>
                                 <th class="p-3">آخر تاريخ صيانة</th>
                                 <th id="thActionsHeader" class="p-3 text-center">الإجراءات</th>
@@ -305,19 +303,19 @@
                 </div>
             </div>
 
-            <!-- TAB: SERVICE & RESET (OIL & HOURS/KM RESET RECEIPT) -->
+            <!-- TAB: SERVICE & RESET -->
             <div id="atab-content-service" class="hidden space-y-4">
                 <div class="max-w-xl mx-auto glass-card p-6 rounded-2xl border border-slate-800 space-y-4">
-                    <h3 id="serviceFormTitleHeader" class="text-sm font-black text-white border-b border-slate-700 pb-2">إيصال تبديل الزيت وتصفير الساعات</h3>
+                    <h3 id="serviceFormTitleHeader" class="text-sm font-black text-white border-b border-slate-700 pb-2">اعتماد الصيانة وتصفير العداد</h3>
                     <div>
-                        <label class="block text-xs text-slate-400 mb-1">اختر الآلية (تابعة لنظام الساعات):</label>
+                        <label class="block text-xs text-slate-400 mb-1">اختر الآلية:</label>
                         <select id="serviceVehicleSelect" onchange="onServiceVehicleSelect()" class="w-full p-3 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
                             <option value="">-- اختر الآلية --</option>
                         </select>
                     </div>
                     <div id="serviceSummaryBox" class="hidden bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs space-y-1">
                         <p class="text-slate-300">اسم الآلية: <span id="svcName" class="text-white font-black"></span></p>
-                        <p class="text-slate-300">العداد المعتمَد الحالي: <span id="svcCurOdo" class="text-sky-400 font-black"></span></p>
+                        <p class="text-slate-300">العداد السابق الحالي: <span id="svcCurOdo" class="text-sky-400 font-black"></span></p>
                     </div>
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">نوع الزيت المستخدم:</label>
@@ -335,14 +333,13 @@
                         <input type="number" id="svcNewOdo" placeholder="أدخل القراءة الجديدة" class="w-full p-3 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
                     </div>
                     <button id="serviceSubmitBtn" onclick="submitServiceReset()" class="w-full py-3 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-black shadow-lg">
-                        إصدار وطباعة إيصال تبديل الزيت
+                        اعتماد الصيانة وطباعة الوصل
                     </button>
                 </div>
 
-                <!-- جدول عرض سجلات إيصالات تبديل الزيت والصيانة مع أزرار الطباعة والحذف -->
                 <div class="glass-card p-4 rounded-2xl border border-slate-800 overflow-x-auto space-y-3">
                     <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                        <h4 class="text-sm font-black text-white">سجل إيصالات تبديل الزيت والصيانة الصادرة</h4>
+                        <h4 class="text-sm font-black text-white">سجل إيصالات الصيانة الصادرة</h4>
                         <span class="text-xs text-slate-400">إجمالي الإيصالات: <strong id="serviceReceiptCount" class="text-teal-400 font-black">0</strong></span>
                     </div>
                     <table class="w-full text-right text-xs">
@@ -584,7 +581,7 @@
                 if(dInfoOperatorRow) dInfoOperatorRow.classList.remove('hidden');
             } else {
                 hoursInputs.classList.add('hidden');
-                kmInputWrapper.classList.add('hidden');
+                kmInputWrapper.classList.remove('hidden');
                 if(vOperatorWrapper) vOperatorWrapper.classList.add('hidden');
                 if(dInfoOperatorRow) dInfoOperatorRow.classList.add('hidden');
             }
@@ -603,9 +600,9 @@
             const thAdminIntervalHeader = document.getElementById('thAdminIntervalHeader');
             const lblSvcNewOdo = document.getElementById('lblSvcNewOdo');
 
-            if (lblVLastOdo) lblVLastOdo.innerText = isHours ? "عدد الساعات المعتمد الحالي" : "عداد الكيلومتر المعتمد الحالي";
+            if (lblVLastOdo) lblVLastOdo.innerText = isHours ? "عدد الساعات المعتمد الحالي" : "العداد السابق (تبديل الزيت)";
             if (lblVInterval) lblVInterval.innerText = isHours ? "حد ساعات الاستحقاق (ساعة)" : "حد الكيلومترات للاستحقاق (كم)";
-            if (thAdminOdoHeader) thAdminOdoHeader.innerText = isHours ? "الساعات المعتمدة" : "العداد الحالي (كم)";
+            if (thAdminOdoHeader) thAdminOdoHeader.innerText = isHours ? "الساعات المعتمدة" : "العداد السابق";
             if (thAdminIntervalHeader) thAdminIntervalHeader.innerText = isHours ? "حد ساعات الصيانة" : "حد مسافة الصيانة";
             if (lblSvcNewOdo) lblSvcNewOdo.innerText = isHours ? "العداد الجديد (بالساعات):" : "العداد الجديد (بالكيلومتر):";
 
@@ -646,8 +643,6 @@
             const infoBox = document.getElementById('driverVehicleInfoBox');
             const currentValInput = document.getElementById('driverCurrentValInput');
             const badgeWrapper = document.getElementById('remainingBadgeWrapper');
-            const badgeLabel = document.getElementById('remainingBadgeLabel');
-            const badgeValue = document.getElementById('remainingBadgeValue');
 
             if(currentValInput) currentValInput.value = '';
             
@@ -671,29 +666,6 @@
 
             const unit = currentSystem === 'hours' ? 'ساعة' : 'كم';
             const lastVal = Number(v.lastOilOdometer) || 0;
-            const interval = Number(v.oilInterval) || (currentSystem === 'hours' ? 250 : 5000);
-            const targetVal = lastVal + interval;
-            const lastCheck = Number(v.lastCheckVal) || lastVal;
-            const remaining = targetVal - lastCheck;
-
-            if (badgeWrapper && badgeLabel && badgeValue) {
-                badgeLabel.innerText = currentSystem === 'hours' ? 'عدد الساعات المتبقية للاستحقاق:' : 'الكيلومترات المتبقية للاستحقاق:';
-                
-                if (remaining > 0) {
-                    badgeValue.innerText = `${remaining.toLocaleString()} ${unit}`;
-                    badgeValue.className = "text-sm font-black font-mono text-emerald-400";
-                    badgeWrapper.className = "mt-3 p-3 rounded-xl border border-emerald-500/30 bg-emerald-950/40 flex items-center justify-between";
-                } else if (remaining === 0) {
-                    badgeValue.innerText = `وصلت للموعد (0 ${unit})`;
-                    badgeValue.className = "text-sm font-black font-mono text-amber-400";
-                    badgeWrapper.className = "mt-3 p-3 rounded-xl border border-amber-500/30 bg-amber-950/40 flex items-center justify-between";
-                } else {
-                    badgeValue.innerText = `متجاوز بـ ${Math.abs(remaining).toLocaleString()} ${unit}`;
-                    badgeValue.className = "text-sm font-black font-mono text-rose-400";
-                    badgeWrapper.className = "mt-3 p-3 rounded-xl border border-rose-500/30 bg-rose-950/40 flex items-center justify-between";
-                }
-                badgeWrapper.classList.remove('hidden');
-            }
 
             document.getElementById('dInfoDriver').innerText = v.driver || '-';
             const dInfoOp = document.getElementById('dInfoOperator');
@@ -701,7 +673,6 @@
 
             document.getElementById('dInfoLastDate').innerText = v.lastOilDate || '-';
             document.getElementById('dInfoLastVal').innerText = lastVal.toLocaleString() + ' ' + unit;
-            document.getElementById('dInfoTargetVal').innerText = targetVal.toLocaleString() + ' ' + unit;
             if(infoBox) infoBox.classList.remove('hidden');
 
             if (currentSystem === 'hours' && submitBtn) {
@@ -710,6 +681,7 @@
             }
         };
 
+        // عرض النتيجة المتبقية مباشرة بدون عبارة "المتبقي للاستحقاق:"
         window.calculateDriverStatus = function() {
             if (currentSystem === 'hours') return;
 
@@ -720,9 +692,12 @@
             const title = document.getElementById('driverStatusTitle');
             const sub = document.getElementById('driverStatusSub');
             const btn = document.getElementById('driverSubmitBtn');
+            const badgeWrapper = document.getElementById('remainingBadgeWrapper');
+            const badgeValue = document.getElementById('remainingBadgeValue');
 
             if (!code || isNaN(currentOdo) || currentOdo <= 0) {
                 card.classList.add('hidden');
+                if(badgeWrapper) badgeWrapper.classList.add('hidden');
                 btn.disabled = true;
                 btn.className = "w-full py-4 bg-slate-700 text-slate-400 rounded-xl text-sm font-black transition cursor-not-allowed";
                 return;
@@ -732,6 +707,7 @@
             const unit = 'كم';
             const lastVal = Number(v.lastOilOdometer) || 0;
             const interval = Number(v.oilInterval) || 5000;
+            
             const targetVal = lastVal + interval;
             const remaining = targetVal - currentOdo;
 
@@ -739,19 +715,36 @@
             btn.disabled = false;
             btn.className = "w-full py-4 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-sm font-black transition cursor-pointer shadow-lg";
 
+            if (badgeWrapper && badgeValue) {
+                if (remaining > 0) {
+                    badgeValue.innerText = `${remaining.toLocaleString()} ${unit}`;
+                    badgeValue.className = "text-base font-black font-mono text-emerald-400";
+                    badgeWrapper.className = "mt-3 p-3 rounded-xl border border-emerald-500/30 bg-emerald-950/40 flex items-center justify-center";
+                } else if (remaining === 0) {
+                    badgeValue.innerText = `0 ${unit} (موعد التبديل)`;
+                    badgeValue.className = "text-base font-black font-mono text-amber-400";
+                    badgeWrapper.className = "mt-3 p-3 rounded-xl border border-amber-500/30 bg-amber-950/40 flex items-center justify-center";
+                } else {
+                    badgeValue.innerText = `متجاوز بـ ${Math.abs(remaining).toLocaleString()} ${unit}`;
+                    badgeValue.className = "text-base font-black font-mono text-rose-400";
+                    badgeWrapper.className = "mt-3 p-3 rounded-xl border border-rose-500/30 bg-rose-950/40 flex items-center justify-center";
+                }
+                badgeWrapper.classList.remove('hidden');
+            }
+
             if (remaining > 0) {
                 card.className = "p-4 rounded-2xl text-center space-y-1 bg-emerald-950/60 border border-emerald-700 text-emerald-200";
                 badge.className = "inline-block px-3 py-1 rounded-full text-xs font-black bg-emerald-800 text-emerald-100";
                 badge.innerText = "ضمن حدود التشغيل الطبيعية";
                 title.innerText = `متبقي للتبديل: ${remaining.toLocaleString()} ${unit}`;
-                sub.innerText = `عداد الاستحقاق المعتمد: ${targetVal.toLocaleString()} ${unit}`;
+                sub.innerText = `عداد الاستحقاق المستهدف: ${targetVal.toLocaleString()} ${unit}`;
             } else {
                 const overLimit = Math.abs(remaining);
                 card.className = "p-4 rounded-2xl text-center space-y-1 bg-rose-950/60 border border-rose-700 text-rose-200";
                 badge.className = "inline-block px-3 py-1 rounded-full text-xs font-black bg-rose-800 text-rose-100";
                 badge.innerText = "تجاوز للاستحقاق - يحتاج صيانة فورية";
                 title.innerText = remaining === 0 ? "وصل العداد لموعد التبديل المباشر!" : `متجاوز بمقدار: ${overLimit.toLocaleString()} ${unit}`;
-                sub.innerText = `عداد الاستحقاق كان عند: ${targetVal.toLocaleString()} ${unit}`;
+                sub.innerText = `عداد الاستحقاق المستهدف كان عند: ${targetVal.toLocaleString()} ${unit}`;
             }
         };
 
@@ -1043,11 +1036,9 @@
         function populateServiceSelect() {
             const select = document.getElementById('serviceVehicleSelect');
             if(!select) return;
-            select.innerHTML = '<option value="">-- اختر الآلية (نظام الساعات) --</option>';
+            select.innerHTML = '<option value="">-- اختر الآلية --</option>';
             
-            const filteredHoursVehicles = windowVehicles.filter(v => (v.systemType || 'km') === 'hours');
-            
-            filteredHoursVehicles.forEach(v => {
+            windowVehicles.forEach(v => {
                 select.innerHTML += `<option value="${v.code}">رمز: ${v.code} - ${v.name} (السائق: ${v.driver || 'غير محدد'})</option>`;
             });
         }
@@ -1058,8 +1049,9 @@
             if (!code) { box.classList.add('hidden'); return; }
 
             const v = windowVehicles.find(item => item.code === code);
+            const unit = (v.systemType === 'hours') ? 'ساعة' : 'كم';
             document.getElementById('svcName').innerText = v.name;
-            document.getElementById('svcCurOdo').innerText = (v.lastOilOdometer || 0) + ' ساعة';
+            document.getElementById('svcCurOdo').innerText = (v.lastOilOdometer || 0) + ' ' + unit;
             box.classList.remove('hidden');
         };
 
@@ -1092,33 +1084,34 @@
                 operator: v.operator || '-',
                 oilType: oilType || 'قياسي',
                 filter: filterVal,
-                newOdo: newOdo
+                newOdo: newOdo,
+                systemType: v.systemType || 'km'
             };
 
             await setDoc(doc(db, "serviceReceipts", receiptId), receiptObj);
 
             printServiceReceipt(receiptObj);
-            alert('تم اعتماد تبديل الزيت وتصفير الساعات وحفظ الإيصال بنجاح!');
+            alert('تم اعتماد الصيانة وتصفير العداد وحفظ الإيصال بنجاح!');
         };
 
         window.printServiceReceipt = function(receipt) {
             const printTarget = document.getElementById('receipt-print-area');
+            const unit = (receipt.systemType === 'hours') ? 'ساعة' : 'كم';
             printTarget.innerHTML = `
                 <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 5px;">
                     <strong style="font-size: 13px;">معامل القالب للكونكريت</strong><br>
-                    <span>إيصال تبديل الزيت وتصفير الساعات</span>
+                    <span>إيصال تبديل الزيت والصيانة</span>
                 </div>
                 <div style="margin-top: 5px; border-bottom: 1px dashed #000; padding-bottom: 5px;">
                     <div>رقم الإيصال: #${receipt.id}</div>
                     <div>الآلية: #${receipt.vehicleCode} - ${receipt.vehicleName}</div>
                     <div>السائق: ${receipt.driver}</div>
-                    <div>المشغل: ${receipt.operator || '-'}</div>
                     <div>نوع الزيت: ${receipt.oilType}</div>
                     <div>الفلتر: ${receipt.filter}</div>
-                    <div>العداد الجديد: ${receipt.newOdo} ساعة</div>
+                    <div>العداد الجديد: ${receipt.newOdo} ${unit}</div>
                     <div>التاريخ: ${new Date(receipt.timestamp).toLocaleString('ar-EG')}</div>
                 </div>
-                <div style="text-align: center; margin-top: 10px;">تم الاعتماد وتصفير الساعات بنجاح</div>
+                <div style="text-align: center; margin-top: 10px;">تم الاعتماد وتصفير العداد بنجاح</div>
             `;
             document.body.className = 'print-receipt-mode';
             window.print();
@@ -1130,7 +1123,7 @@
                 alert('حساب مشاهدة فقط ولا يملك صلاحية الحذف!');
                 return;
             }
-            if (confirm(`هل أنت متأكد من حذف إيصال تبديل الزيت رقم (${receiptId})؟`)) {
+            if (confirm(`هل أنت متأكد من حذف إيصال الصيانة رقم (${receiptId})؟`)) {
                 try {
                     await deleteDoc(doc(db, "serviceReceipts", receiptId));
                     alert('تم حذف الإيصال بنجاح.');
@@ -1156,6 +1149,7 @@
 
             windowServiceReceipts.forEach((r, index) => {
                 const dateStr = new Date(r.timestamp).toLocaleString('ar-EG');
+                const unit = (r.systemType === 'hours') ? 'ساعة' : 'كم';
                 let actionBtns = `
                     <div class="flex items-center justify-center gap-1.5">
                         <button onclick='printServiceReceipt(${JSON.stringify(r)})' class="px-2.5 py-1 bg-sky-600/30 text-sky-300 hover:bg-sky-600/60 rounded-lg text-xs font-black transition flex items-center gap-1">
@@ -1177,9 +1171,9 @@
                     <tr>
                         <td class="p-3">${index + 1}</td>
                         <td class="p-3 text-white">#${r.vehicleCode} - ${r.vehicleName}</td>
-                        <td class="p-3">${r.driver} / ${r.operator || '-'}</td>
+                        <td class="p-3">${r.driver}</td>
                         <td class="p-3">${r.oilType} (${r.filter})</td>
-                        <td class="p-3 font-mono text-sky-400">${r.newOdo} ساعة</td>
+                        <td class="p-3 font-mono text-sky-400">${r.newOdo} ${unit}</td>
                         <td class="p-3 text-slate-400">${dateStr}</td>
                         <td class="p-3 text-center">${actionBtns}</td>
                     </tr>
