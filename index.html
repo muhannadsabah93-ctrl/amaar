@@ -145,7 +145,7 @@
                     <div class="flex justify-between border-b border-slate-800 pb-1.5"><span class="text-slate-400">اسم السائق:</span><span id="dInfoDriver" class="text-white font-black text-sm">-</span></div>
                     <div id="dInfoOperatorRow" class="flex justify-between border-b border-slate-800 pb-1.5 hidden"><span class="text-slate-400">اسم المشغل:</span><span id="dInfoOperator" class="text-white font-black text-sm">-</span></div>
                     <div class="flex justify-between border-b border-slate-800 pb-1.5"><span class="text-slate-400">تاريخ التبديل السابق:</span><span id="dInfoLastDate" class="text-slate-300 font-bold">-</span></div>
-                    <div class="flex justify-between"><span id="dInfoLabelLastVal" class="text-slate-400">ساعات التبديل المتبقية:</span><span id="dInfoLastVal" class="text-sky-400 font-black text-sm">-</span></div>
+                    <div class="flex justify-between"><span id="dInfoLabelLastVal" class="text-slate-400">مجموع ساعات العمل:</span><span id="dInfoLastVal" class="text-sky-400 font-black text-sm">-</span></div>
                 </div>
 
                 <!-- Hours Specific Inputs -->
@@ -258,7 +258,7 @@
                         
                         <div id="vSubCategoryWrapper" class="hidden">
                             <label class="block text-xs text-slate-400 mb-1">تصنيف الآلية (مولدة أم مضخة)</label>
-                            <select id="vSubCategory" class="w-full p-2.5 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
+                            <select id="vSubCategory" onchange="onAdminSubCategoryChange()" class="w-full p-2.5 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
                                 <option value="generators">مولدة</option>
                                 <option value="pumps">مضخة</option>
                             </select>
@@ -574,12 +574,15 @@
                 if (serviceSubmitBtn) serviceSubmitBtn.innerText = "إصدار وطباعة إيصال تبديل الزيت وتصفير الساعات";
                 if (driverSubmitBtn) driverSubmitBtn.classList.remove('hidden'); // إظهار زر الإرسال لنظام الساعات
                 document.getElementById('vSubCategoryWrapper').classList.remove('hidden');
+                onAdminSubCategoryChange();
             } else {
                 if (serviceTabBtnLabel) serviceTabBtnLabel.innerText = "اعتماد الصيانة وتصفير العداد";
                 if (serviceFormTitleHeader) serviceFormTitleHeader.innerText = "اعتماد الصيانة وتصفير العداد (كيلومتر)";
                 if (serviceSubmitBtn) serviceSubmitBtn.innerText = "اعتماد الصيانة وطباعة الوصل";
                 if (driverSubmitBtn) driverSubmitBtn.classList.add('hidden'); // إخفاء زر الإرسال نهائياً لنظام الكيلومتر
                 document.getElementById('vSubCategoryWrapper').classList.add('hidden');
+                const vOperatorWrapper = document.getElementById('vOperatorWrapper');
+                if(vOperatorWrapper) vOperatorWrapper.classList.add('hidden');
             }
 
             const hoursInputs = document.getElementById('hoursSpecificInputs');
@@ -591,15 +594,25 @@
             } else {
                 hoursInputs.classList.add('hidden');
                 kmInputWrapper.classList.remove('hidden');
-                const vOperatorWrapper = document.getElementById('vOperatorWrapper');
                 const dInfoOperatorRow = document.getElementById('dInfoOperatorRow');
-                if(vOperatorWrapper) vOperatorWrapper.classList.add('hidden');
                 if(dInfoOperatorRow) dInfoOperatorRow.classList.add('hidden');
             }
 
             updateAdminLabelsForSystem();
             populateDriverSelect();
             switchView('driver');
+        };
+
+        window.onAdminSubCategoryChange = function() {
+            const subCatVal = document.getElementById('vSubCategory')?.value;
+            const opWrapper = document.getElementById('vOperatorWrapper');
+            if (!opWrapper) return;
+
+            if (currentSystem === 'hours' && subCatVal === 'pumps') {
+                opWrapper.classList.remove('hidden');
+            } else {
+                opWrapper.classList.add('hidden');
+            }
         };
 
         function updateAdminLabelsForSystem() {
@@ -709,10 +722,21 @@
             }
 
             const unit = currentSystem === 'hours' ? 'ساعة' : 'كم';
-            const lastVal = Number(v.lastOilOdometer) || 0;
-            const interval = Number(v.oilInterval) || (currentSystem === 'hours' ? 250 : 5000);
-            const currentCheckVal = Number(v.lastCheckVal) || lastVal;
-            const remainingHours = (lastVal + interval) - currentCheckVal;
+            
+            // عداد الساعات الأساسي الحالي (العداد المعتمد للآلية)
+            const baseCurrentHours = Number(v.lastOilOdometer) || 0;
+            
+            // مجموع ساعات العمل من مدخلات المواقع لهذه الآلية من السجلات المسجلة
+            let sitesWorkHours = 0;
+            if (currentSystem === 'hours') {
+                const vehicleRecords = windowRecords.filter(r => r.vehicleCode === code && (r.systemType || 'hours') === 'hours');
+                vehicleRecords.forEach(r => {
+                    sitesWorkHours += Number(r.recordedVal) || 0;
+                });
+            }
+
+            // إجمالي مجموع ساعات العمل (عدد الساعات الحالي + مجموع ساعات العمل من مدخلات المواقع)
+            const totalWorkHours = baseCurrentHours + sitesWorkHours;
 
             document.getElementById('dInfoDriver').innerText = v.driver || '-';
             const dInfoOp = document.getElementById('dInfoOperator');
@@ -722,11 +746,11 @@
             
             const dInfoLabelLastVal = document.getElementById('dInfoLabelLastVal');
             if (currentSystem === 'hours') {
-                if(dInfoLabelLastVal) dInfoLabelLastVal.innerText = "ساعات التبديل المتبقية:";
-                document.getElementById('dInfoLastVal').innerText = remainingHours.toLocaleString() + ' ' + unit;
+                if(dInfoLabelLastVal) dInfoLabelLastVal.innerText = "مجموع ساعات العمل:";
+                document.getElementById('dInfoLastVal').innerText = totalWorkHours.toLocaleString() + ' ' + unit;
             } else {
                 if(dInfoLabelLastVal) dInfoLabelLastVal.innerText = "العداد السابق (تبديل الزيت):";
-                document.getElementById('dInfoLastVal').innerText = lastVal.toLocaleString() + ' ' + unit;
+                document.getElementById('dInfoLastVal').innerText = baseCurrentHours.toLocaleString() + ' ' + unit;
             }
 
             if(infoBox) infoBox.classList.remove('hidden');
@@ -1013,7 +1037,10 @@
             
             if (currentSystem === 'hours') {
                 const subCatSelect = document.getElementById('vSubCategory');
-                if (subCatSelect) subCatSelect.value = v.subCategory || 'generators';
+                if (subCatSelect) {
+                    subCatSelect.value = v.subCategory || 'generators';
+                    onAdminSubCategoryChange();
+                }
             }
 
             const vOp = document.getElementById('vOperator');
@@ -1077,6 +1104,7 @@
             document.getElementById('vLastOdo').value = '';
             document.getElementById('vInterval').value = '';
             document.getElementById('vFormTitle').innerText = 'إضافة آلية جديدة للقاعدة';
+            onAdminSubCategoryChange();
         };
 
         function populateServiceSelect() {
