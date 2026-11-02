@@ -126,7 +126,7 @@
             <div class="glass-card rounded-3xl p-6 shadow-2xl space-y-5">
                 <div class="text-center border-b border-slate-700 pb-4">
                     <h2 id="driverSystemTitle" class="text-2xl font-black font-cairo text-white">--</h2>
-                    <p class="text-xs text-sky-400 mt-1">تسجيل الفحص وإرسال السجل اليومي</p>
+                    <p class="text-xs text-sky-400 mt-1">تسجيل وفحص حالة الآلية</p>
                 </div>
 
                 <div>
@@ -145,18 +145,25 @@
                     <div class="flex justify-between border-b border-slate-800 pb-1.5"><span class="text-slate-400">اسم السائق:</span><span id="dInfoDriver" class="text-white font-black text-sm">-</span></div>
                     <div id="dInfoOperatorRow" class="flex justify-between border-b border-slate-800 pb-1.5 hidden"><span class="text-slate-400">اسم المشغل:</span><span id="dInfoOperator" class="text-white font-black text-sm">-</span></div>
                     <div class="flex justify-between border-b border-slate-800 pb-1.5"><span class="text-slate-400">تاريخ التبديل السابق:</span><span id="dInfoLastDate" class="text-slate-300 font-bold">-</span></div>
-                    <div class="flex justify-between"><span class="text-slate-400">عداد التبديل السابق:</span><span id="dInfoLastVal" class="text-sky-400 font-black text-sm">-</span></div>
+                    <div class="flex justify-between"><span id="dInfoLabelLastVal" class="text-slate-400">ساعات التبديل المتبقية:</span><span id="dInfoLastVal" class="text-sky-400 font-black text-sm">-</span></div>
                 </div>
 
                 <!-- Hours Specific Inputs -->
                 <div id="hoursSpecificInputs" class="space-y-4 hidden">
+                    <div id="hoursDateInputWrapper">
+                        <label class="block text-xs font-black text-teal-400 mb-1"><i class="fa-regular fa-calendar-days ml-1"></i> تاريخ التجهيز / التشغيل:</label>
+                        <input type="date" id="driverWorkDateInput" class="w-full p-3 text-sm rounded-xl bg-slate-900 border border-slate-700 text-white outline-none font-bold">
+                    </div>
+
                     <div id="hoursSiteInputWrapper" class="hidden">
                         <label class="block text-xs font-black text-slate-300 mb-1">اسم الموقع:</label>
                         <input type="text" id="driverSiteInput" placeholder="أدخل اسم الموقع" class="w-full p-3 text-sm rounded-xl bg-slate-900 border border-slate-700 text-white outline-none">
                     </div>
+                    
+                    <!-- حقل كمية الكونكريت (يظهر فقط عند اختيار مضخة) -->
                     <div id="hoursQtyInputWrapper" class="hidden">
-                        <label class="block text-xs font-black text-slate-300 mb-1">كمية تجهيز الكونكريت (m³):</label>
-                        <input type="number" id="driverQtyInput" placeholder="الكمية بالمتر المكعب" class="w-full p-3 text-sm rounded-xl bg-slate-900 border border-slate-700 text-white outline-none">
+                        <label class="block text-xs font-black text-sky-300 mb-1"><i class="fa-solid fa-cube ml-1"></i> كمية الكونكريت المجهز (m³):</label>
+                        <input type="number" id="driverQtyInput" placeholder="أدخل الكمية بالمتر المكعب" class="w-full p-3 text-sm rounded-xl bg-slate-900 border border-slate-700 text-white outline-none">
                     </div>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800">
@@ -210,7 +217,8 @@
                     <p id="driverStatusSub" class="text-xs text-slate-400"></p>
                 </div>
 
-                <button id="driverSubmitBtn" onclick="submitDriverCheck()" disabled class="w-full py-4 bg-slate-700 text-slate-400 rounded-xl text-sm font-black transition cursor-not-allowed">
+                <!-- زر الحفظ والإرسال (يظهر حصرياً لنظام الساعات ويختفي في نظام الكيلومتر) -->
+                <button id="driverSubmitBtn" onclick="submitDriverCheck()" class="w-full py-4 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-sm font-black transition cursor-pointer shadow-lg">
                     حفظ وإرسال السجل
                 </button>
             </div>
@@ -558,16 +566,19 @@
             const serviceTabBtnLabel = document.getElementById('serviceTabBtnLabel');
             const serviceFormTitleHeader = document.getElementById('serviceFormTitleHeader');
             const serviceSubmitBtn = document.getElementById('serviceSubmitBtn');
+            const driverSubmitBtn = document.getElementById('driverSubmitBtn');
 
             if (sysType === 'hours') {
                 if (serviceTabBtnLabel) serviceTabBtnLabel.innerText = "إيصال تبديل الزيت وتصفير الساعات";
                 if (serviceFormTitleHeader) serviceFormTitleHeader.innerText = "إيصال تبديل الزيت وتصفير الساعات";
                 if (serviceSubmitBtn) serviceSubmitBtn.innerText = "إصدار وطباعة إيصال تبديل الزيت وتصفير الساعات";
+                if (driverSubmitBtn) driverSubmitBtn.classList.remove('hidden'); // إظهار زر الإرسال لنظام الساعات
                 document.getElementById('vSubCategoryWrapper').classList.remove('hidden');
             } else {
                 if (serviceTabBtnLabel) serviceTabBtnLabel.innerText = "اعتماد الصيانة وتصفير العداد";
                 if (serviceFormTitleHeader) serviceFormTitleHeader.innerText = "اعتماد الصيانة وتصفير العداد (كيلومتر)";
                 if (serviceSubmitBtn) serviceSubmitBtn.innerText = "اعتماد الصيانة وطباعة الوصل";
+                if (driverSubmitBtn) driverSubmitBtn.classList.add('hidden'); // إخفاء زر الإرسال نهائياً لنظام الكيلومتر
                 document.getElementById('vSubCategoryWrapper').classList.add('hidden');
             }
 
@@ -627,6 +638,9 @@
         function populateDriverSelect() {
             const select = document.getElementById('driverVehicleSelect');
             if(!select) return;
+            
+            const previousSelectedValue = select.value;
+
             select.innerHTML = '<option value="">-- اختر الآلية / السائق --</option>';
             
             const filtered = windowVehicles.filter(v => (v.systemType || 'km') === currentSystem);
@@ -636,12 +650,14 @@
                 select.innerHTML += `<option value="${v.code}">${subCatText} رمز الآلية: ${v.code} - ${v.name} (${v.driver || 'غير محدد'})</option>`;
             });
 
-            const badgeWrapper = document.getElementById('remainingBadgeWrapper');
-            if(badgeWrapper) badgeWrapper.classList.add('hidden');
+            if (previousSelectedValue && select.querySelector(`option[value="${previousSelectedValue}"]`)) {
+                select.value = previousSelectedValue;
+            }
         }
 
         window.onDriverVehicleChange = function() {
-            const code = document.getElementById('driverVehicleSelect').value;
+            const selectElement = document.getElementById('driverVehicleSelect');
+            const code = selectElement.value;
             const infoBox = document.getElementById('driverVehicleInfoBox');
             const currentValInput = document.getElementById('driverCurrentValInput');
             const badgeWrapper = document.getElementById('remainingBadgeWrapper');
@@ -650,15 +666,10 @@
             
             const statusCard = document.getElementById('driverStatusCard');
             if(statusCard) statusCard.classList.add('hidden');
-            
-            const submitBtn = document.getElementById('driverSubmitBtn');
-            if(submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.className = "w-full py-4 bg-slate-700 text-slate-400 rounded-xl text-sm font-black transition cursor-not-allowed";
-            }
 
             const siteWrapper = document.getElementById('hoursSiteInputWrapper');
             const qtyWrapper = document.getElementById('hoursQtyInputWrapper');
+            const dateInputWrapper = document.getElementById('hoursDateInputWrapper');
             const vOperatorWrapper = document.getElementById('vOperatorWrapper');
             const dInfoOperatorRow = document.getElementById('dInfoOperatorRow');
 
@@ -667,14 +678,22 @@
                 if(badgeWrapper) badgeWrapper.classList.add('hidden');
                 if(siteWrapper) siteWrapper.classList.add('hidden');
                 if(qtyWrapper) qtyWrapper.classList.add('hidden');
+                if(dateInputWrapper) dateInputWrapper.classList.add('hidden');
                 return; 
             }
 
             const v = windowVehicles.find(item => item.code === code);
             if (!v) return;
 
-            // الفحص الذكي للآلية في نظام الساعات (مولدة أم مضخة)
             if (currentSystem === 'hours') {
+                if(dateInputWrapper) {
+                    dateInputWrapper.classList.remove('hidden');
+                    const workDateInput = document.getElementById('driverWorkDateInput');
+                    if(workDateInput && !workDateInput.value) {
+                        workDateInput.value = new Date().toISOString().split('T')[0];
+                    }
+                }
+
                 const isGenerator = (v.subCategory === 'generators');
                 if (isGenerator) {
                     if(siteWrapper) siteWrapper.classList.add('hidden');
@@ -683,7 +702,7 @@
                     if(dInfoOperatorRow) dInfoOperatorRow.classList.add('hidden');
                 } else {
                     if(siteWrapper) siteWrapper.classList.remove('hidden');
-                    if(qtyWrapper) qtyWrapper.classList.remove('hidden');
+                    if(qtyWrapper) qtyWrapper.classList.remove('hidden'); // إظهار حقل كمية الكونكريت حصرياً للمضخات
                     if(vOperatorWrapper) vOperatorWrapper.classList.remove('hidden');
                     if(dInfoOperatorRow) dInfoOperatorRow.classList.remove('hidden');
                 }
@@ -691,19 +710,26 @@
 
             const unit = currentSystem === 'hours' ? 'ساعة' : 'كم';
             const lastVal = Number(v.lastOilOdometer) || 0;
+            const interval = Number(v.oilInterval) || (currentSystem === 'hours' ? 250 : 5000);
+            const currentCheckVal = Number(v.lastCheckVal) || lastVal;
+            const remainingHours = (lastVal + interval) - currentCheckVal;
 
             document.getElementById('dInfoDriver').innerText = v.driver || '-';
             const dInfoOp = document.getElementById('dInfoOperator');
             if(dInfoOp) dInfoOp.innerText = v.operator || '-';
 
             document.getElementById('dInfoLastDate').innerText = v.lastOilDate || '-';
-            document.getElementById('dInfoLastVal').innerText = lastVal.toLocaleString() + ' ' + unit;
-            if(infoBox) infoBox.classList.remove('hidden');
-
-            if (currentSystem === 'hours' && submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.className = "w-full py-4 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-sm font-black transition cursor-pointer shadow-lg";
+            
+            const dInfoLabelLastVal = document.getElementById('dInfoLabelLastVal');
+            if (currentSystem === 'hours') {
+                if(dInfoLabelLastVal) dInfoLabelLastVal.innerText = "ساعات التبديل المتبقية:";
+                document.getElementById('dInfoLastVal').innerText = remainingHours.toLocaleString() + ' ' + unit;
+            } else {
+                if(dInfoLabelLastVal) dInfoLabelLastVal.innerText = "العداد السابق (تبديل الزيت):";
+                document.getElementById('dInfoLastVal').innerText = lastVal.toLocaleString() + ' ' + unit;
             }
+
+            if(infoBox) infoBox.classList.remove('hidden');
         };
 
         window.calculateDriverStatus = function() {
@@ -715,15 +741,12 @@
             const badge = document.getElementById('driverStatusBadge');
             const title = document.getElementById('driverStatusTitle');
             const sub = document.getElementById('driverStatusSub');
-            const btn = document.getElementById('driverSubmitBtn');
             const badgeWrapper = document.getElementById('remainingBadgeWrapper');
             const badgeValue = document.getElementById('remainingBadgeValue');
 
             if (!code || isNaN(currentOdo) || currentOdo <= 0) {
                 card.classList.add('hidden');
                 if(badgeWrapper) badgeWrapper.classList.add('hidden');
-                btn.disabled = true;
-                btn.className = "w-full py-4 bg-slate-700 text-slate-400 rounded-xl text-sm font-black transition cursor-not-allowed";
                 return;
             }
 
@@ -736,8 +759,6 @@
             const remaining = targetVal - currentOdo;
 
             card.classList.remove('hidden');
-            btn.disabled = false;
-            btn.className = "w-full py-4 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-sm font-black transition cursor-pointer shadow-lg";
 
             if (badgeWrapper && badgeValue) {
                 if (remaining > 0) {
@@ -796,7 +817,8 @@
         }
 
         window.submitDriverCheck = async function() {
-            const code = document.getElementById('driverVehicleSelect').value;
+            const selectElement = document.getElementById('driverVehicleSelect');
+            const code = selectElement.value;
             const v = windowVehicles.find(item => item.code === code);
             if (!v) return;
 
@@ -804,29 +826,26 @@
             let timeRangeStr = '-';
             let calculatedHours = 0;
 
-            if (currentSystem === 'km') {
-                val = Number(document.getElementById('driverCurrentValInput').value);
-                if (!val) return;
-            } else {
-                const hFrom = document.getElementById('driverTimeFromHour')?.value || '08';
-                const mFrom = document.getElementById('driverTimeFromMin')?.value || '00';
-                const pFrom = document.getElementById('driverTimeFromPeriod')?.value || 'صباحاً';
-                
-                const hTo = document.getElementById('driverTimeToHour')?.value || '02';
-                const mTo = document.getElementById('driverTimeToMin')?.value || '00';
-                const pTo = document.getElementById('driverTimeToPeriod')?.value || 'مساءً';
+            const hFrom = document.getElementById('driverTimeFromHour')?.value || '08';
+            const mFrom = document.getElementById('driverTimeFromMin')?.value || '00';
+            const pFrom = document.getElementById('driverTimeFromPeriod')?.value || 'صباحاً';
+            
+            const hTo = document.getElementById('driverTimeToHour')?.value || '02';
+            const mTo = document.getElementById('driverTimeToMin')?.value || '00';
+            const pTo = document.getElementById('driverTimeToPeriod')?.value || 'مساءً';
 
-                timeRangeStr = `${hFrom}:${mFrom} ${pFrom} - ${hTo}:${mTo} ${pTo}`;
-                calculatedHours = calculateWorkHoursDuration(hFrom, mFrom, pFrom, hTo, mTo, pTo);
-                val = calculatedHours;
-            }
+            timeRangeStr = `${hFrom}:${mFrom} ${pFrom} - ${hTo}:${mTo} ${pTo}`;
+            calculatedHours = calculateWorkHoursDuration(hFrom, mFrom, pFrom, hTo, mTo, pTo);
+            val = calculatedHours;
 
             const recId = "REC-" + Math.floor(1000 + Math.random() * 9000);
             const isGenerator = currentSystem === 'hours' && v.subCategory === 'generators';
+            const customWorkDate = document.getElementById('driverWorkDateInput')?.value || new Date().toISOString().split('T')[0];
 
             const recordObj = {
                 id: recId,
                 timestamp: new Date().toISOString(),
+                workDate: customWorkDate,
                 vehicleCode: v.code,
                 vehicleName: v.name,
                 systemType: currentSystem,
@@ -841,20 +860,16 @@
 
             await setDoc(doc(db, "records", recId), recordObj);
 
-            if (currentSystem === 'km') {
-                v.lastCheckVal = val;
-                await setDoc(doc(db, "vehicles", v.code), v);
-                document.getElementById('driverCurrentValInput').value = '';
-                calculateDriverStatus();
-            } else {
-                v.lastCheckVal = (Number(v.lastCheckVal) || Number(v.lastOilOdometer)) + calculatedHours;
-                await setDoc(doc(db, "vehicles", v.code), v);
-                if(!isGenerator) {
-                    document.getElementById('driverSiteInput').value = '';
-                    document.getElementById('driverQtyInput').value = '';
-                }
-                onDriverVehicleChange();
+            v.lastCheckVal = (Number(v.lastCheckVal) || Number(v.lastOilOdometer) || 0) + calculatedHours;
+            await setDoc(doc(db, "vehicles", v.code), v);
+            
+            if(!isGenerator) {
+                document.getElementById('driverSiteInput').value = '';
+                document.getElementById('driverQtyInput').value = '';
             }
+            
+            selectElement.value = code;
+            onDriverVehicleChange();
 
             alert('تم حفظ وإرسال السجل بنجاح!');
         };
@@ -1230,7 +1245,7 @@
             const systemRecords = windowRecords.filter(r => (r.systemType || 'km') === currentSystem);
 
             filteredRecords = systemRecords.filter(r => {
-                const rDate = new Date(r.timestamp);
+                const rDate = new Date(r.workDate || r.timestamp);
                 const rYear = rDate.getFullYear().toString();
                 const rMonth = String(rDate.getMonth() + 1).padStart(2, '0');
 
@@ -1262,7 +1277,7 @@
             const isHours = currentSystem === 'hours';
 
             filteredRecords.forEach((r, index) => {
-                const dateStr = new Date(r.timestamp).toLocaleString('ar-EG');
+                const dateStr = r.workDate || new Date(r.timestamp).toLocaleDateString('ar-EG');
                 
                 let colValue = '-';
                 let colSiteInfo = '-';
@@ -1327,7 +1342,7 @@
             const isHours = currentSystem === 'hours';
 
             filteredRecords.forEach((r, index) => {
-                const dateStr = new Date(r.timestamp).toLocaleString('ar-EG');
+                const dateStr = r.workDate || new Date(r.timestamp).toLocaleDateString('ar-EG');
                 let driverOperatorCol = isHours ? `${r.driver || '-'}${r.operator && r.operator !== '-' ? ' / ' + r.operator : ''}` : (r.driver || '-');
 
                 const isGen = r.subCategory === 'generators';
