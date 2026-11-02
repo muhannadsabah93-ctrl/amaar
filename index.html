@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ذذذ<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -144,28 +144,30 @@
                 <div id="driverVehicleInfoBox" class="hidden bg-slate-900/90 p-4 rounded-2xl border border-slate-700 text-xs space-y-2.5">
                     <div class="flex justify-between border-b border-slate-800 pb-1.5"><span class="text-slate-400">اسم السائق:</span><span id="dInfoDriver" class="text-white font-black text-sm">-</span></div>
                     <div id="dInfoOperatorRow" class="flex justify-between border-b border-slate-800 pb-1.5 hidden"><span class="text-slate-400">اسم المشغل:</span><span id="dInfoOperator" class="text-white font-black text-sm">-</span></div>
-                    <div class="flex justify-between border-b border-slate-800 pb-1.5"><span class="text-slate-400">تاريخ التبديل السابق:</span><span id="dInfoLastDate" class="text-slate-300 font-bold">-</span></div>
-                    <div class="flex justify-between"><span id="dInfoLabelLastVal" class="text-slate-400">مجموع ساعات العمل:</span><span id="dInfoLastVal" class="text-sky-400 font-black text-sm">-</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">مجموع الساعات:</span><span id="dInfoTotalHours" class="text-amber-400 font-black text-base">-</span></div>
                 </div>
 
                 <!-- Hours Specific Inputs -->
                 <div id="hoursSpecificInputs" class="space-y-4 hidden">
+                    <!-- تاريخ الصب -->
                     <div id="hoursDateInputWrapper">
-                        <label class="block text-xs font-black text-teal-400 mb-1"><i class="fa-regular fa-calendar-days ml-1"></i> تاريخ التجهيز / التشغيل:</label>
+                        <label class="block text-xs font-black text-teal-400 mb-1"><i class="fa-regular fa-calendar-days ml-1"></i> تاريخ الصب:</label>
                         <input type="date" id="driverWorkDateInput" class="w-full p-3 text-sm rounded-xl bg-slate-900 border border-slate-700 text-white outline-none font-bold">
                     </div>
 
+                    <!-- كمية الكونكريت (للمضخات فقط تحت التاريخ مباشرة) -->
+                    <div id="hoursQtyInputWrapper" class="hidden">
+                        <label class="block text-xs font-black text-sky-300 mb-1"><i class="fa-solid fa-cube ml-1"></i> كمية الكونكريت (m³):</label>
+                        <input type="number" id="driverQtyInput" placeholder="أدخل الكمية بالمتر المكعب" class="w-full p-3 text-sm rounded-xl bg-slate-900 border border-slate-700 text-white outline-none">
+                    </div>
+
+                    <!-- اسم الموقع -->
                     <div id="hoursSiteInputWrapper" class="hidden">
                         <label class="block text-xs font-black text-slate-300 mb-1">اسم الموقع:</label>
                         <input type="text" id="driverSiteInput" placeholder="أدخل اسم الموقع" class="w-full p-3 text-sm rounded-xl bg-slate-900 border border-slate-700 text-white outline-none">
                     </div>
                     
-                    <!-- حقل كمية الكونكريت (يظهر فقط عند اختيار مضخة) -->
-                    <div id="hoursQtyInputWrapper" class="hidden">
-                        <label class="block text-xs font-black text-sky-300 mb-1"><i class="fa-solid fa-cube ml-1"></i> كمية الكونكريت المجهز (m³):</label>
-                        <input type="number" id="driverQtyInput" placeholder="أدخل الكمية بالمتر المكعب" class="w-full p-3 text-sm rounded-xl bg-slate-900 border border-slate-700 text-white outline-none">
-                    </div>
-                    
+                    <!-- الوقت -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800">
                         <div>
                             <label class="block text-xs font-black text-sky-400 mb-1.5"><i class="fa-regular fa-clock ml-1"></i> من الساعة (وقت الدخول):</label>
@@ -217,9 +219,9 @@
                     <p id="driverStatusSub" class="text-xs text-slate-400"></p>
                 </div>
 
-                <!-- زر الحفظ والإرسال (يظهر حصرياً لنظام الساعات ويختفي في نظام الكيلومتر) -->
+                <!-- إرسال -->
                 <button id="driverSubmitBtn" onclick="submitDriverCheck()" class="w-full py-4 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-sm font-black transition cursor-pointer shadow-lg">
-                    حفظ وإرسال السجل
+                    إرسال السجل
                 </button>
             </div>
         </div>
@@ -273,16 +275,12 @@
                             <input type="text" id="vOperator" placeholder="اسم المشغل" class="w-full p-2.5 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
                         </div>
                         <div>
-                            <label id="lblVLastOdo" class="block text-xs text-slate-400 mb-1">العداد السابق (تبديل الزيت)</label>
+                            <label id="lblVLastOdo" class="block text-xs text-slate-400 mb-1">العداد السابق</label>
                             <input type="number" id="vLastOdo" required placeholder="0" class="w-full p-2.5 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
                         </div>
                         <div>
                             <label id="lblVInterval" class="block text-xs text-slate-400 mb-1">حد/مسافة الاستحقاق (Interval)</label>
                             <input type="number" id="vInterval" required placeholder="5000" class="w-full p-2.5 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-slate-400 mb-1">تاريخ آخر تبديل زيت</label>
-                            <input type="date" id="vLastDate" required class="w-full p-2.5 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
                         </div>
                         <div class="sm:col-span-2 lg:col-span-4 flex justify-end gap-2 pt-2">
                             <button type="button" onclick="resetVehicleForm()" class="px-4 py-2 bg-slate-700 text-slate-300 rounded-xl text-xs font-black">إلغاء</button>
@@ -300,7 +298,6 @@
                                 <th id="thAdminDriverHeader" class="p-3">السائق / المشغل</th>
                                 <th id="thAdminOdoHeader" class="p-3">العداد السابق</th>
                                 <th id="thAdminIntervalHeader" class="p-3">حد الاستحقاق</th>
-                                <th class="p-3">آخر تاريخ صيانة</th>
                                 <th id="thActionsHeader" class="p-3 text-center">الإجراءات</th>
                             </tr>
                         </thead>
@@ -315,20 +312,34 @@
             <div id="atab-content-service" class="hidden space-y-4">
                 <div class="max-w-xl mx-auto glass-card p-6 rounded-2xl border border-slate-800 space-y-4">
                     <h3 id="serviceFormTitleHeader" class="text-sm font-black text-white border-b border-slate-700 pb-2">اعتماد الصيانة وتصفير العداد</h3>
+                    
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">اختر الآلية:</label>
                         <select id="serviceVehicleSelect" onchange="onServiceVehicleSelect()" class="w-full p-3 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
                             <option value="">-- اختر الآلية --</option>
                         </select>
                     </div>
+
+                    <div>
+                        <label class="block text-xs text-teal-400 mb-1"><i class="fa-regular fa-calendar-days ml-1"></i> تاريخ التصفير والصيانة:</label>
+                        <input type="date" id="svcDateInput" class="w-full p-3 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none font-bold">
+                    </div>
+
                     <div id="serviceSummaryBox" class="hidden bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs space-y-1">
                         <p class="text-slate-300">اسم الآلية: <span id="svcName" class="text-white font-black"></span></p>
-                        <p class="text-slate-300">العداد السابق الحالي: <span id="svcCurOdo" class="text-sky-400 font-black"></span></p>
+                        <p class="text-slate-300">مجموع الساعات الكلي الحالي: <span id="svcPrevHours" class="text-amber-400 font-black"></span></p>
                     </div>
+
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">نوع الزيت المستخدم:</label>
                         <input type="text" id="svcOilType" placeholder="Super Diesel 15W40" class="w-full p-3 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
                     </div>
+
+                    <div>
+                        <label class="block text-xs text-sky-300 mb-1"><i class="fa-solid fa-oil-can ml-1"></i> كمية الزيت (لتر):</label>
+                        <input type="number" id="svcOilQty" placeholder="أدخل كمية الزيت المستخدمة باللتر" class="w-full p-3 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
+                    </div>
+
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">فلتر الزيت:</label>
                         <select id="svcFilter" class="w-full p-3 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
@@ -336,12 +347,15 @@
                             <option value="بدون فلتر">بدون فلتر</option>
                         </select>
                     </div>
+
                     <div>
                         <label id="lblSvcNewOdo" class="block text-xs text-slate-400 mb-1">العداد الجديد (تصفير / اعتماد جديد):</label>
                         <input type="number" id="svcNewOdo" placeholder="أدخل القراءة الجديدة" class="w-full p-3 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white outline-none">
                     </div>
+
+                    <!-- وصل التصفير -->
                     <button id="serviceSubmitBtn" onclick="submitServiceReset()" class="w-full py-3 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-black shadow-lg">
-                        اعتماد الصيانة وطباعة الوصل
+                        إصدار وصل التصفير (تصفير الرقم بالكامل والبدء من الصفر)
                     </button>
                 </div>
 
@@ -356,8 +370,8 @@
                                 <th class="p-3">ت</th>
                                 <th class="p-3">الآلية</th>
                                 <th class="p-3">السائق / المشغل</th>
-                                <th class="p-3">نوع الزيت والفلتر</th>
-                                <th class="p-3">العداد الجديد</th>
+                                <th class="p-3">نوع الزيت والكمية والفلتر</th>
+                                <th class="p-3">الساعات المصفرة والمرحلة</th>
                                 <th class="p-3">التاريخ والوقت</th>
                                 <th class="p-3 text-center">الإجراءات (طباعة / حذف)</th>
                             </tr>
@@ -416,7 +430,7 @@
                         <span class="text-xs text-slate-400">إجمالي النتائج: <strong id="recCountDisplay" class="text-sky-400 font-black">0</strong> سجل</span>
                         <button onclick="printFilteredReportA4()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black shadow-md flex items-center gap-2">
                             <i class="fa-solid fa-print"></i>
-                            <span>طباعة التقرير المفلتر (A4)</span>
+                            <span>طباعة التقرير المفلتر (A4 - من الأقدم للأحدث)</span>
                         </button>
                     </div>
                 </div>
@@ -432,7 +446,7 @@
                                 <th id="thRecordsValHeader" class="p-3">القراءة / التفاصيل</th>
                                 <th id="thRecordsSiteHeader" class="p-3">الموقع / وقت التشغيل</th>
                                 <th class="p-3">التاريخ والوقت</th>
-                                <th id="thRecordsActionHeader" class="p-3 text-center">الإجراءات</th>
+                                <th class="p-3 text-center">الإجراءات</th>
                             </tr>
                         </thead>
                         <tbody id="recordsAdminTableBody" class="divide-y divide-slate-800 font-bold">
@@ -510,6 +524,8 @@
 
         window.onload = function() {
             initFirebaseRealtimeSync();
+            const svcDateEl = document.getElementById('svcDateInput');
+            if(svcDateEl) svcDateEl.value = new Date().toISOString().split('T')[0];
         };
 
         function initFirebaseRealtimeSync() {
@@ -529,7 +545,8 @@
             onSnapshot(collection(db, "records"), (snapshot) => {
                 windowRecords = [];
                 snapshot.forEach((docSnap) => windowRecords.push(docSnap.data()));
-                windowRecords.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                // حفظ السجلات مرتبة (من الأقدم للأحدث بناءً على التاريخ/الوقت)
+                windowRecords.sort((a, b) => new Date(a.timestamp || a.workDate) - new Date(b.timestamp || b.workDate));
                 renderAllData();
             });
 
@@ -569,17 +586,17 @@
             const driverSubmitBtn = document.getElementById('driverSubmitBtn');
 
             if (sysType === 'hours') {
-                if (serviceTabBtnLabel) serviceTabBtnLabel.innerText = "إيصال تبديل الزيت وتصفير الساعات";
-                if (serviceFormTitleHeader) serviceFormTitleHeader.innerText = "إيصال تبديل الزيت وتصفير الساعات";
-                if (serviceSubmitBtn) serviceSubmitBtn.innerText = "إصدار وطباعة إيصال تبديل الزيت وتصفير الساعات";
-                if (driverSubmitBtn) driverSubmitBtn.classList.remove('hidden'); // إظهار زر الإرسال لنظام الساعات
+                if (serviceTabBtnLabel) serviceTabBtnLabel.innerText = "وصل التصفير والصيانة";
+                if (serviceFormTitleHeader) serviceFormTitleHeader.innerText = "وصل التصفير والصيانة وتصفير العداد";
+                if (serviceSubmitBtn) serviceSubmitBtn.innerText = "إصدار وطباعة وصل التصفير (تصفير الرقم بالكامل)";
+                if (driverSubmitBtn) driverSubmitBtn.classList.remove('hidden');
                 document.getElementById('vSubCategoryWrapper').classList.remove('hidden');
                 onAdminSubCategoryChange();
             } else {
                 if (serviceTabBtnLabel) serviceTabBtnLabel.innerText = "اعتماد الصيانة وتصفير العداد";
                 if (serviceFormTitleHeader) serviceFormTitleHeader.innerText = "اعتماد الصيانة وتصفير العداد (كيلومتر)";
                 if (serviceSubmitBtn) serviceSubmitBtn.innerText = "اعتماد الصيانة وطباعة الوصل";
-                if (driverSubmitBtn) driverSubmitBtn.classList.add('hidden'); // إخفاء زر الإرسال نهائياً لنظام الكيلومتر
+                if (driverSubmitBtn) driverSubmitBtn.classList.add('hidden');
                 document.getElementById('vSubCategoryWrapper').classList.add('hidden');
                 const vOperatorWrapper = document.getElementById('vOperatorWrapper');
                 if(vOperatorWrapper) vOperatorWrapper.classList.add('hidden');
@@ -600,6 +617,7 @@
 
             updateAdminLabelsForSystem();
             populateDriverSelect();
+            populateServiceSelect();
             switchView('driver');
         };
 
@@ -624,11 +642,11 @@
             const thAdminIntervalHeader = document.getElementById('thAdminIntervalHeader');
             const lblSvcNewOdo = document.getElementById('lblSvcNewOdo');
 
-            if (lblVLastOdo) lblVLastOdo.innerText = isHours ? "عدد الساعات المعتمد الحالي" : "العداد السابق (تبديل الزيت)";
-            if (lblVInterval) lblVInterval.innerText = isHours ? "حد ساعات الاستحقاق (ساعة)" : "حد الكيلومترات للاستحقاق (كم)";
-            if (thAdminOdoHeader) thAdminOdoHeader.innerText = isHours ? "الساعات المعتمدة" : "العداد السابق";
+            if (lblVLastOdo) lblVLastOdo.innerText = "العداد السابق";
+            if (lblVInterval) lblVInterval.innerText = isHours ? "حد ساعات الاستحقاق للتنبيه (Interval)" : "حد الكيلومترات للاستحقاق (كم)";
+            if (thAdminOdoHeader) thAdminOdoHeader.innerText = "العداد السابق";
             if (thAdminIntervalHeader) thAdminIntervalHeader.innerText = isHours ? "حد ساعات الصيانة" : "حد مسافة الصيانة";
-            if (lblSvcNewOdo) lblSvcNewOdo.innerText = isHours ? "العداد الجديد (بالساعات):" : "العداد الجديد (بالكيلومتر):";
+            if (lblSvcNewOdo) lblSvcNewOdo.innerText = isHours ? "ملاحظة التصفير الجديد:" : "العداد الجديد (بالكيلومتر):";
 
             const thRecordsValHeader = document.getElementById('thRecordsValHeader');
             const thRecordsSiteHeader = document.getElementById('thRecordsSiteHeader');
@@ -653,7 +671,6 @@
             if(!select) return;
             
             const previousSelectedValue = select.value;
-
             select.innerHTML = '<option value="">-- اختر الآلية / السائق --</option>';
             
             const filtered = windowVehicles.filter(v => (v.systemType || 'km') === currentSystem);
@@ -690,7 +707,7 @@
                 if(infoBox) infoBox.classList.add('hidden'); 
                 if(badgeWrapper) badgeWrapper.classList.add('hidden');
                 if(siteWrapper) siteWrapper.classList.add('hidden');
-                if(qtyWrapper) qtyWrapper.classList.add('hidden');
+                if(qtyWrapper) siteWrapper.classList.add('hidden');
                 if(dateInputWrapper) dateInputWrapper.classList.add('hidden');
                 return; 
             }
@@ -707,54 +724,95 @@
                     }
                 }
 
-                const isGenerator = (v.subCategory === 'generators');
-                if (isGenerator) {
-                    if(siteWrapper) siteWrapper.classList.add('hidden');
-                    if(qtyWrapper) qtyWrapper.classList.add('hidden');
-                    if(vOperatorWrapper) vOperatorWrapper.classList.add('hidden');
-                    if(dInfoOperatorRow) dInfoOperatorRow.classList.add('hidden');
-                } else {
+                const isPump = (v.subCategory === 'pumps');
+                if (isPump) {
+                    if(qtyWrapper) qtyWrapper.classList.remove('hidden');
                     if(siteWrapper) siteWrapper.classList.remove('hidden');
-                    if(qtyWrapper) qtyWrapper.classList.remove('hidden'); // إظهار حقل كمية الكونكريت حصرياً للمضخات
                     if(vOperatorWrapper) vOperatorWrapper.classList.remove('hidden');
                     if(dInfoOperatorRow) dInfoOperatorRow.classList.remove('hidden');
+                } else {
+                    if(qtyWrapper) qtyWrapper.classList.add('hidden');
+                    if(siteWrapper) siteWrapper.classList.add('hidden');
+                    if(vOperatorWrapper) vOperatorWrapper.classList.add('hidden');
+                    if(dInfoOperatorRow) dInfoOperatorRow.classList.add('hidden');
                 }
             }
 
             const unit = currentSystem === 'hours' ? 'ساعة' : 'كم';
             
-            // عداد الساعات الأساسي الحالي (العداد المعتمد للآلية)
-            const baseCurrentHours = Number(v.lastOilOdometer) || 0;
-            
-            // مجموع ساعات العمل من مدخلات المواقع لهذه الآلية من السجلات المسجلة
-            let sitesWorkHours = 0;
+            let accumulatedHours = 0;
+            const lastResetTime = v.lastServiceTimestamp ? Number(v.lastServiceTimestamp) : 0;
+            const previousStoredHours = Number(v.lastOilOdometer) || 0; 
+
             if (currentSystem === 'hours') {
-                const vehicleRecords = windowRecords.filter(r => r.vehicleCode === code && (r.systemType || 'hours') === 'hours');
+                const vehicleRecords = windowRecords.filter(r => {
+                    const rTime = new Date(r.timestamp || r.workDate).getTime();
+                    return r.vehicleCode === code && (r.systemType || 'hours') === 'hours' && rTime > lastResetTime;
+                });
                 vehicleRecords.forEach(r => {
-                    sitesWorkHours += Number(r.recordedVal) || 0;
+                    accumulatedHours += Number(r.recordedVal) || 0;
                 });
             }
 
-            // إجمالي مجموع ساعات العمل (عدد الساعات الحالي + مجموع ساعات العمل من مدخلات المواقع)
-            const totalWorkHours = baseCurrentHours + sitesWorkHours;
+            const totalSumHours = previousStoredHours + accumulatedHours;
 
             document.getElementById('dInfoDriver').innerText = v.driver || '-';
             const dInfoOp = document.getElementById('dInfoOperator');
             if(dInfoOp) dInfoOp.innerText = v.operator || '-';
 
-            document.getElementById('dInfoLastDate').innerText = v.lastOilDate || '-';
+            document.getElementById('dInfoTotalHours').innerText = totalSumHours.toLocaleString() + ' ' + unit;
             
-            const dInfoLabelLastVal = document.getElementById('dInfoLabelLastVal');
             if (currentSystem === 'hours') {
-                if(dInfoLabelLastVal) dInfoLabelLastVal.innerText = "مجموع ساعات العمل:";
-                document.getElementById('dInfoLastVal').innerText = totalWorkHours.toLocaleString() + ' ' + unit;
-            } else {
-                if(dInfoLabelLastVal) dInfoLabelLastVal.innerText = "العداد السابق (تبديل الزيت):";
-                document.getElementById('dInfoLastVal').innerText = baseCurrentHours.toLocaleString() + ' ' + unit;
+                calculateHoursAlertStatus(v, totalSumHours);
             }
 
             if(infoBox) infoBox.classList.remove('hidden');
         };
+
+        function calculateHoursAlertStatus(v, totalSumHours) {
+            const card = document.getElementById('driverStatusCard');
+            const badge = document.getElementById('driverStatusBadge');
+            const title = document.getElementById('driverStatusTitle');
+            const sub = document.getElementById('driverStatusSub');
+            const badgeWrapper = document.getElementById('remainingBadgeWrapper');
+            const badgeValue = document.getElementById('remainingBadgeValue');
+
+            const interval = Number(v.oilInterval) || 250; 
+            const remaining = interval - totalSumHours;
+
+            card.classList.remove('hidden');
+
+            if (badgeWrapper && badgeValue) {
+                if (remaining > 0) {
+                    badgeValue.innerText = `متبقي للوصول للحد: ${remaining.toLocaleString()} ساعة`;
+                    badgeValue.className = "text-base font-black font-mono text-emerald-400";
+                    badgeWrapper.className = "mt-3 p-3 rounded-xl border border-emerald-500/30 bg-emerald-950/40 flex items-center justify-center";
+                } else if (remaining === 0) {
+                    badgeValue.innerText = `⚠️ وصل العداد إلى حد الاستحقاق المطلوب!`;
+                    badgeValue.className = "text-base font-black font-mono text-amber-400";
+                    badgeWrapper.className = "mt-3 p-3 rounded-xl border border-amber-500/30 bg-amber-950/40 flex items-center justify-center";
+                } else {
+                    badgeValue.innerText = `🚨 تجاوز الحد المجدول بـ ${Math.abs(remaining).toLocaleString()} ساعة!`;
+                    badgeValue.className = "text-base font-black font-mono text-rose-400";
+                    badgeWrapper.className = "mt-3 p-3 rounded-xl border border-rose-500/30 bg-rose-950/40 flex items-center justify-center";
+                }
+                badgeWrapper.classList.remove('hidden');
+            }
+
+            if (remaining > 0) {
+                card.className = "p-4 rounded-2xl text-center space-y-1 bg-emerald-950/60 border border-emerald-700 text-emerald-200";
+                badge.className = "inline-block px-3 py-1 rounded-full text-xs font-black bg-emerald-800 text-emerald-100";
+                badge.innerText = "ضمن حدود التشغيل الطبيعية";
+                title.innerText = `مجموع الساعات: ${totalSumHours.toLocaleString()} ساعة`;
+                sub.innerText = `حد التنبيه المستهدف: ${interval.toLocaleString()} ساعة`;
+            } else {
+                card.className = "p-4 rounded-2xl text-center space-y-1 bg-rose-950/60 border border-rose-700 text-rose-200";
+                badge.className = "inline-block px-3 py-1 rounded-full text-xs font-black bg-rose-800 text-rose-100";
+                badge.innerText = "تنبيه: وصل العداد أو تجاوزه";
+                title.innerText = remaining === 0 ? "وصل العداد تماماً لغاية حد الصيانة والتنبيه!" : `تم تجاوز حد التنبيه بمقدار ${Math.abs(remaining).toLocaleString()} ساعة`;
+                sub.innerText = `الحد المقرر كان: ${interval.toLocaleString()} ساعة - يرجى مراجعة الصيانة وتصفير الساعات.`;
+            }
+        }
 
         window.calculateDriverStatus = function() {
             if (currentSystem === 'hours') return;
@@ -883,9 +941,6 @@
             };
 
             await setDoc(doc(db, "records", recId), recordObj);
-
-            v.lastCheckVal = (Number(v.lastCheckVal) || Number(v.lastOilOdometer) || 0) + calculatedHours;
-            await setDoc(doc(db, "vehicles", v.code), v);
             
             if(!isGenerator) {
                 document.getElementById('driverSiteInput').value = '';
@@ -895,7 +950,7 @@
             selectElement.value = code;
             onDriverVehicleChange();
 
-            alert('تم حفظ وإرسال السجل بنجاح!');
+            alert('تم إرسال السجل وحفظه بنجاح!');
         };
 
         window.openAdminAuthModal = function() { document.getElementById('modalAdminAuth').classList.remove('hidden'); };
@@ -976,8 +1031,7 @@
                 driver: document.getElementById('vDriver').value.trim(),
                 operator: (currentSystem === 'hours' && subCat === 'pumps') ? (document.getElementById('vOperator').value.trim() || '-') : '',
                 lastOilOdometer: Number(document.getElementById('vLastOdo').value) || 0,
-                oilInterval: Number(document.getElementById('vInterval').value) || (currentSystem === 'hours' ? 250 : 5000),
-                lastOilDate: document.getElementById('vLastDate').value
+                oilInterval: Number(document.getElementById('vInterval').value) || (currentSystem === 'hours' ? 250 : 5000)
             };
 
             await setDoc(doc(db, "vehicles", code), vehicleData);
@@ -1017,9 +1071,8 @@
                         <td class="p-3 text-sky-400 font-mono">#${v.code}</td>
                         <td class="p-3 text-white">${v.name} ${v.subCategory === 'generators' ? '(مولدة)' : (v.subCategory === 'pumps' ? '(مضخة)' : '')}</td>
                         <td class="p-3">${driverOperatorDisplay}</td>
-                        <td class="p-3 font-mono">${v.lastOilOdometer} ${unit}</td>
+                        <td class="p-3 font-mono">${v.lastOilOdometer || 0} ${unit}</td>
                         <td class="p-3 font-mono text-amber-400">${v.oilInterval} ${unit}</td>
-                        <td class="p-3 text-slate-400">${v.lastOilDate || '-'}</td>
                         ${actionBtns}
                     </tr>
                 `;
@@ -1046,9 +1099,8 @@
             const vOp = document.getElementById('vOperator');
             if(vOp) vOp.value = v.operator || '';
 
-            document.getElementById('vLastOdo').value = v.lastOilOdometer;
+            document.getElementById('vLastOdo').value = v.lastOilOdometer || 0;
             document.getElementById('vInterval').value = v.oilInterval;
-            document.getElementById('vLastDate').value = v.lastOilDate || '';
             document.getElementById('vFormTitle').innerText = 'تعديل الآلية';
         };
 
@@ -1065,28 +1117,10 @@
                 return;
             }
             
-            const recordToDelete = windowRecords.find(r => r.id === recId);
-            if (!recordToDelete) {
-                alert('السجل غير موجود!');
-                return;
-            }
-
-            if (confirm(`هل أنت متأكد من حذف السجل رقم (${recId})؟ سيتم خصم الساعات المسجلة من عداد الآلية.`)) {
+            if (confirm(`هل أنت متأكد من حذف السجل رقم (${recId})؟`)) {
                 try {
-                    if (recordToDelete.systemType === 'hours' && recordToDelete.recordedVal) {
-                        const vehicleCode = recordToDelete.vehicleCode;
-                        const hoursToSubtract = Number(recordToDelete.recordedVal) || 0;
-                        
-                        const targetVehicle = windowVehicles.find(v => v.code === vehicleCode);
-                        if (targetVehicle) {
-                            let currentCheckVal = Number(targetVehicle.lastCheckVal) || Number(targetVehicle.lastOilOdometer) || 0;
-                            targetVehicle.lastCheckVal = Math.max((Number(targetVehicle.lastOilOdometer) || 0), currentCheckVal - hoursToSubtract);
-                            await setDoc(doc(db, "vehicles", targetVehicle.code), targetVehicle);
-                        }
-                    }
-
                     await deleteDoc(doc(db, "records", recId));
-                    alert('تم حذف السجل وإرجاع (خصم) الساعات من الآلية بنجاح.');
+                    alert('تم حذف السجل بنجاح.');
                 } catch (error) {
                     console.error("خطأ أثناء حذف السجل: ", error);
                     alert('حدث خطأ أثناء محاولة الحذف.');
@@ -1112,21 +1146,45 @@
             if(!select) return;
             select.innerHTML = '<option value="">-- اختر الآلية --</option>';
             
-            windowVehicles.forEach(v => {
+            const filtered = windowVehicles.filter(v => (v.systemType || 'km') === currentSystem);
+            filtered.forEach(v => {
                 select.innerHTML += `<option value="${v.code}">رمز: ${v.code} - ${v.name} (السائق: ${v.driver || 'غير محدد'})</option>`;
             });
+            onServiceVehicleSelect();
         }
 
         window.onServiceVehicleSelect = function() {
             const code = document.getElementById('serviceVehicleSelect').value;
             const box = document.getElementById('serviceSummaryBox');
-            if (!code) { box.classList.add('hidden'); return; }
+            
+            if (!code) { 
+                if(box) box.classList.add('hidden'); 
+                return; 
+            }
 
             const v = windowVehicles.find(item => item.code === code);
+            if (!v) return;
+
             const unit = (v.systemType === 'hours') ? 'ساعة' : 'كم';
             document.getElementById('svcName').innerText = v.name;
-            document.getElementById('svcCurOdo').innerText = (v.lastOilOdometer || 0) + ' ' + unit;
-            box.classList.remove('hidden');
+            
+            let currentAccumulatedHours = 0;
+            const lastResetTime = v.lastServiceTimestamp ? Number(v.lastServiceTimestamp) : 0;
+            const prevStored = Number(v.lastOilOdometer) || 0;
+
+            if (v.systemType === 'hours') {
+                const vehicleRecords = windowRecords.filter(r => {
+                    const rTime = new Date(r.timestamp || r.workDate).getTime();
+                    return r.vehicleCode === code && (r.systemType || 'hours') === 'hours' && rTime > lastResetTime;
+                });
+                vehicleRecords.forEach(r => {
+                    currentAccumulatedHours += Number(r.recordedVal) || 0;
+                });
+            }
+
+            const totalCurrentSum = prevStored + currentAccumulatedHours;
+            document.getElementById('svcPrevHours').innerText = totalCurrentSum.toLocaleString() + ' ' + unit;
+            if(box) box.classList.remove('hidden');
         };
 
         window.submitServiceReset = async function() {
@@ -1136,56 +1194,84 @@
             }
 
             const code = document.getElementById('serviceVehicleSelect').value;
-            const newOdo = Number(document.getElementById('svcNewOdo').value);
+            if(!code) {
+                alert('يرجى اختيار الآلية أولاً!');
+                return;
+            }
+
             const oilType = document.getElementById('svcOilType').value;
+            const oilQty = document.getElementById('svcOilQty')?.value || '-';
             const filterVal = document.getElementById('svcFilter').value;
+            const customServiceDate = document.getElementById('svcDateInput').value || new Date().toISOString().split('T')[0];
 
             const v = windowVehicles.find(item => item.code === code);
             if (!v) return;
 
-            v.lastOilOdometer = newOdo;
-            v.lastCheckVal = newOdo;
-            v.lastOilDate = new Date().toISOString().split('T')[0];
+            let currentAccumulatedHours = 0;
+            const lastResetTime = v.lastServiceTimestamp ? Number(v.lastServiceTimestamp) : 0;
+            const prevStored = Number(v.lastOilOdometer) || 0;
+
+            if (v.systemType === 'hours') {
+                const vehicleRecords = windowRecords.filter(r => {
+                    const rTime = new Date(r.timestamp || r.workDate).getTime();
+                    return r.vehicleCode === code && (r.systemType || 'hours') === 'hours' && rTime > lastResetTime;
+                });
+                vehicleRecords.forEach(r => {
+                    currentAccumulatedHours += Number(r.recordedVal) || 0;
+                });
+            }
+
+            const totalAccumulatedBeforeReset = prevStored + currentAccumulatedHours;
+
+            v.lastOilOdometer = 0;
+            v.lastServiceTimestamp = Date.now();
             await setDoc(doc(db, "vehicles", v.code), v);
 
             const receiptId = "SRV-" + Math.floor(1000 + Math.random() * 9000);
             const receiptObj = {
                 id: receiptId,
-                timestamp: new Date().toISOString(),
+                timestamp: customServiceDate,
                 vehicleCode: v.code,
                 vehicleName: v.name,
                 driver: v.driver,
                 operator: v.operator || '-',
                 oilType: oilType || 'قياسي',
+                oilQuantity: oilQty,
                 filter: filterVal,
-                newOdo: newOdo,
-                systemType: v.systemType || 'km'
+                resetHoursAmount: totalAccumulatedBeforeReset,
+                systemType: v.systemType || 'km',
+                subCategory: v.subCategory || ''
             };
 
             await setDoc(doc(db, "serviceReceipts", receiptId), receiptObj);
 
             printServiceReceipt(receiptObj);
-            alert('تم اعتماد الصيانة وتصفير العداد وحفظ الإيصال بنجاح!');
+            alert('تم تصفير مجموع الساعات بالكامل والبدء من الصفر (0 ساعة)!');
         };
 
         window.printServiceReceipt = function(receipt) {
             const printTarget = document.getElementById('receipt-print-area');
             const unit = (receipt.systemType === 'hours') ? 'ساعة' : 'كم';
+            const receiptTitle = (receipt.systemType === 'hours') ? 'وصل تصفير ساعات العمل والصيانة' : 'إيصال تبديل الزيت والصيانة';
+            
+            let oilLine = `<div>الزيت: ${receipt.oilType} (${receipt.oilQuantity || '-'} لتر)</div>`;
+
             printTarget.innerHTML = `
                 <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 5px;">
                     <strong style="font-size: 13px;">معامل القالب للكونكريت</strong><br>
-                    <span>إيصال تبديل الزيت والصيانة</span>
+                    <span>${receiptTitle}</span>
                 </div>
                 <div style="margin-top: 5px; border-bottom: 1px dashed #000; padding-bottom: 5px;">
-                    <div>رقم الإيصال: #${receipt.id}</div>
+                    <div>رقم الوصل: #${receipt.id}</div>
                     <div>الآلية: #${receipt.vehicleCode} - ${receipt.vehicleName}</div>
                     <div>السائق: ${receipt.driver}</div>
-                    <div>نوع الزيت: ${receipt.oilType}</div>
+                    ${oilLine}
                     <div>الفلتر: ${receipt.filter}</div>
-                    <div>العداد الجديد: ${receipt.newOdo} ${unit}</div>
-                    <div>التاريخ: ${new Date(receipt.timestamp).toLocaleString('ar-EG')}</div>
+                    <div>مجموع الساعات المصفرة: ${receipt.resetHoursAmount || 0} ${unit}</div>
+                    <div>حالة العداد الجديدة: 0 ${unit} (بدء من الصفر)</div>
+                    <div>التاريخ: ${receipt.timestamp}</div>
                 </div>
-                <div style="text-align: center; margin-top: 10px;">تم الاعتماد وتصفير العداد بنجاح</div>
+                <div style="text-align: center; margin-top: 10px;">تم تصفير العداد والبدء من جديد بنجاح</div>
             `;
             document.body.className = 'print-receipt-mode';
             window.print();
@@ -1214,15 +1300,16 @@
             if(!tbody) return;
 
             tbody.innerHTML = '';
-            countDisplay.innerText = windowServiceReceipts.length;
+            const filteredReceipts = windowServiceReceipts.filter(r => (r.systemType || 'km') === currentSystem);
+            countDisplay.innerText = filteredReceipts.length;
 
-            if (windowServiceReceipts.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-500">لا توجد إيصالات صيانة مسجلة حتى الآن</td></tr>';
+            if (filteredReceipts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-500">لا توجد إيصالات صيانة مسجلة لهذا النظام حتى الآن</td></tr>';
                 return;
             }
 
-            windowServiceReceipts.forEach((r, index) => {
-                const dateStr = new Date(r.timestamp).toLocaleString('ar-EG');
+            filteredReceipts.forEach((r, index) => {
+                const dateStr = r.timestamp || '-';
                 const unit = (r.systemType === 'hours') ? 'ساعة' : 'كم';
                 let actionBtns = `
                     <div class="flex items-center justify-center gap-1.5">
@@ -1241,13 +1328,15 @@
                 }
                 actionBtns += `</div>`;
 
+                const oilInfoText = `${r.oilType || '-'} (كمية الزيت: ${r.oilQuantity || '-'} لتر) - ${r.filter || '-'}`;
+
                 tbody.innerHTML += `
                     <tr>
                         <td class="p-3">${index + 1}</td>
                         <td class="p-3 text-white">#${r.vehicleCode} - ${r.vehicleName}</td>
                         <td class="p-3">${r.driver}</td>
-                        <td class="p-3">${r.oilType} (${r.filter})</td>
-                        <td class="p-3 font-mono text-sky-400">${r.newOdo} ${unit}</td>
+                        <td class="p-3">${oilInfoText}</td>
+                        <td class="p-3 font-mono text-amber-400">مصفّر بالكامل: ${r.resetHoursAmount || 0} ${unit}</td>
                         <td class="p-3 text-slate-400">${dateStr}</td>
                         <td class="p-3 text-center">${actionBtns}</td>
                     </tr>
@@ -1284,6 +1373,9 @@
                 return matchMonth && matchYear && matchVehicle;
             });
 
+            // ترتيب النتائج المصفاة تصاعدياً (من الأقدم للأحدث) للعرض والطباعة
+            filteredRecords.sort((a, b) => new Date(a.workDate || a.timestamp) - new Date(b.workDate || b.timestamp));
+
             document.getElementById('recCountDisplay').innerText = filteredRecords.length;
 
             const tbody = document.getElementById('recordsAdminTableBody');
@@ -1313,7 +1405,7 @@
 
                 if (isHours) {
                     const isGen = r.subCategory === 'generators';
-                    colValue = isGen ? `مدة: ${r.recordedVal || 0} س` : `مدة: ${r.recordedVal || 0} س | كمية: ${r.quantity || '-'} m³`;
+                    colValue = isGen ? `مدة: ${r.recordedVal || 0} س` : `مدة: ${r.recordedVal || 0} س | كمية كونكريت: ${r.quantity || '-'} m³`;
                     colSiteInfo = isGen ? `وقت التشغيل: ${r.timeRange || '-'}` : `${r.site || '-'} (${r.timeRange || '-'})`;
                 } else {
                     colValue = r.recordedVal ? `${r.recordedVal} كم` : '-';
@@ -1353,13 +1445,13 @@
             const titleHeader = document.getElementById('printReportTitle');
             
             const sysName = currentSystem === 'hours' ? 'نظام الساعات' : 'نظام الكيلومتر';
-            titleHeader.innerText = `تقرير سجلات وجولات (${sysName})`;
+            titleHeader.innerText = `تقرير سجلات وجولات (${sysName}) - [من الأقدم إلى الأحدث]`;
 
             const monthVal = document.getElementById('recFilterMonth').value || 'الكل';
             const yearVal = document.getElementById('recFilterYear').value || 'الكل';
             const vehicleVal = document.getElementById('recFilterVehicle').value || 'جميع الآليات';
 
-            detailsHeader.innerText = `التصفية: السنة (${yearVal}) - الشهر (${monthVal}) - الآلية (${vehicleVal})`;
+            detailsHeader.innerText = `التصفية: السنة (${yearVal}) - الشهر (${monthVal}) - الآلية (${vehicleVal}) | الترتيب: من الأقدم إلى الأحدث`;
             printBody.innerHTML = '';
 
             if (filteredRecords.length === 0) {
@@ -1369,12 +1461,15 @@
 
             const isHours = currentSystem === 'hours';
 
-            filteredRecords.forEach((r, index) => {
+            // التأكد من أن السجلات المراد طباعتها مرتبة تصاعدياً (من الأقدم للأحدث)
+            const recordsToPrint = [...filteredRecords].sort((a, b) => new Date(a.workDate || a.timestamp) - new Date(b.workDate || b.timestamp));
+
+            recordsToPrint.forEach((r, index) => {
                 const dateStr = r.workDate || new Date(r.timestamp).toLocaleDateString('ar-EG');
                 let driverOperatorCol = isHours ? `${r.driver || '-'}${r.operator && r.operator !== '-' ? ' / ' + r.operator : ''}` : (r.driver || '-');
 
                 const isGen = r.subCategory === 'generators';
-                let colValue = isHours ? (isGen ? `مدة: ${r.recordedVal || 0} س` : `مدة: ${r.recordedVal || 0} س | كمية: ${r.quantity || '-'} m³`) : `${r.recordedVal || '-'} كم`;
+                let colValue = isHours ? (isGen ? `مدة: ${r.recordedVal || 0} س` : `مدة: ${r.recordedVal || 0} س | كمية كونكريت: ${r.quantity || '-'} m³`) : `${r.recordedVal || '-'} كم`;
                 let colSiteInfo = isHours ? (isGen ? `وقت التشغيل: ${r.timeRange || '-'}` : `${r.site || '-'} (${r.timeRange || '-'})`) : 'فحص دوري';
 
                 printBody.innerHTML += `
