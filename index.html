@@ -404,8 +404,12 @@
                         </div>
                     </div>
 
-                    <div class="flex justify-between items-center pt-2">
-                        <span class="text-xs text-slate-400">إجمالي النتائج: <strong id="recCountDisplay" class="text-sky-400 font-black">0</strong> سجل</span>
+                    <div class="flex flex-wrap justify-between items-center pt-2 gap-3">
+                        <div class="flex flex-wrap items-center gap-4">
+                            <span class="text-xs text-slate-400">إجمالي النتائج: <strong id="recCountDisplay" class="text-sky-400 font-black">0</strong> سجل</span>
+                            <span id="recTotalHoursWrapper" class="text-xs text-slate-400 hidden">إجمالي ساعات العمل: <strong id="recTotalHoursDisplay" class="text-amber-400 font-black">0</strong> ساعة</span>
+                            <span id="recTotalQtyWrapper" class="text-xs text-slate-400 hidden border-r border-slate-700 pr-4">إجمالي الكونكريت المجهز: <strong id="recTotalQtyDisplay" class="text-teal-400 font-black">0</strong> m³</span>
+                        </div>
                         <button onclick="printFilteredReportA4()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black shadow-md flex items-center gap-2">
                             <i class="fa-solid fa-print"></i>
                             <span>طباعة التقرير المفلتر (A4 - من الأقدم للأحدث)</span>
@@ -420,11 +424,11 @@
                                 <th class="p-3">ت</th>
                                 <th class="p-3">الآلية</th>
                                 <th id="thRecordsOperatorHeader" class="p-3">السائق / المشغل</th>
-                                <th class="p-3">نوع العملية</th>
-                                <th id="thRecordsValHeader" class="p-3">القراءة / التفاصيل</th>
-                                <th id="thRecordsSiteHeader" class="p-3">الموقع / وقت التشغيل</th>
+                                <th id="thRecordsValHeader" class="p-3">قراءة العداد</th>
+                                <th id="thRecordsExtraHeader" class="p-3">كمية الكونكريت (m³)</th>
+                                <th id="thRecordsSiteHeader" class="p-3">الموقع / التفاصيل</th>
                                 <th class="p-3">التاريخ والوقت</th>
-                                <th class="p-3 text-center">الإجراءات</th>
+                                <th id="thRecordsActionHeader" class="p-3 text-center">الإجراءات</th>
                             </tr>
                         </thead>
                         <tbody id="recordsAdminTableBody" class="divide-y divide-slate-800 font-bold">
@@ -465,8 +469,8 @@
                     <th>ت</th>
                     <th>رمز واسم الآلية</th>
                     <th id="thPrintDriverHeader">السائق / المشغل</th>
-                    <th>نوع العملية</th>
                     <th id="thPrintValHeader">القراءة المسجلة</th>
+                    <th id="thPrintExtraHeader">كمية الكونكريت (m³)</th>
                     <th id="thPrintSiteHeader">الموقع / التفاصيل</th>
                     <th>التاريخ</th>
                 </tr>
@@ -628,8 +632,10 @@
             if (dInfoTotalLabel) dInfoTotalLabel.innerText = isHours ? "مجموع الساعات:" : "العداد السابق:";
 
             const thRecordsValHeader = document.getElementById('thRecordsValHeader');
+            const thRecordsExtraHeader = document.getElementById('thRecordsExtraHeader');
             const thRecordsSiteHeader = document.getElementById('thRecordsSiteHeader');
             const thPrintValHeader = document.getElementById('thPrintValHeader');
+            const thPrintExtraHeader = document.getElementById('thPrintExtraHeader');
             const thPrintSiteHeader = document.getElementById('thPrintSiteHeader');
             const thAdminDriverHeader = document.getElementById('thAdminDriverHeader');
             const thRecordsOperatorHeader = document.getElementById('thRecordsOperatorHeader');
@@ -639,9 +645,26 @@
             if (thRecordsOperatorHeader) thRecordsOperatorHeader.innerText = isHours ? "السائق / المشغل" : "اسم السائق";
             if (thPrintDriverHeader) thPrintDriverHeader.innerText = isHours ? "السائق / المشغل" : "اسم السائق";
 
-            if (thRecordsValHeader) thRecordsValHeader.innerText = isHours ? "مدة العمل والكمية" : "قراءة العداد (كم)";
+            if (thRecordsValHeader) thRecordsValHeader.innerText = isHours ? "عدد ساعات العمل" : "قراءة العداد (كم)";
+            if (thRecordsExtraHeader) {
+                if (isHours) {
+                    thRecordsExtraHeader.style.display = 'table-cell';
+                    thRecordsExtraHeader.innerText = "كمية الكونكريت (m³)";
+                } else {
+                    thRecordsExtraHeader.style.display = 'none';
+                }
+            }
+            if (thPrintValHeader) thPrintValHeader.innerText = isHours ? "عدد ساعات العمل" : "قراءة العداد (كم)";
+            if (thPrintExtraHeader) {
+                if (isHours) {
+                    thPrintExtraHeader.style.display = 'table-cell';
+                    thPrintExtraHeader.innerText = "كمية الكونكريت (m³)";
+                } else {
+                    thPrintExtraHeader.style.display = 'none';
+                }
+            }
+
             if (thRecordsSiteHeader) thRecordsSiteHeader.innerText = isHours ? "الموقع / أوقات التشغيل" : "حالة الفحص";
-            if (thPrintValHeader) thPrintValHeader.innerText = isHours ? "مدة العمل والكمية" : "قراءة العداد (كم)";
             if (thPrintSiteHeader) thPrintSiteHeader.innerText = isHours ? "الموقع / أوقات العمل" : "ملاحظات الفحص";
         }
 
@@ -686,7 +709,7 @@
                 if(infoBox) infoBox.classList.add('hidden'); 
                 if(badgeWrapper) badgeWrapper.classList.add('hidden');
                 if(siteWrapper) siteWrapper.classList.add('hidden');
-                if(qtyWrapper) siteWrapper.classList.add('hidden');
+                if(qtyWrapper) qtyWrapper.classList.add('hidden');
                 if(dateInputWrapper) dateInputWrapper.classList.add('hidden');
                 return; 
             }
@@ -1254,6 +1277,30 @@
 
             document.getElementById('recCountDisplay').innerText = filteredRecords.length;
 
+            const isHours = currentSystem === 'hours';
+            const totalHoursWrapper = document.getElementById('recTotalHoursWrapper');
+            const totalHoursDisplay = document.getElementById('recTotalHoursDisplay');
+            const totalQtyWrapper = document.getElementById('recTotalQtyWrapper');
+            const totalQtyDisplay = document.getElementById('recTotalQtyDisplay');
+
+            if (isHours) {
+                let totalH = 0;
+                let totalQ = 0;
+                filteredRecords.forEach(r => {
+                    totalH += Number(r.recordedVal) || 0;
+                    totalQ += Number(r.quantity) || 0;
+                });
+
+                if (totalHoursDisplay) totalHoursDisplay.innerText = totalH.toLocaleString();
+                if (totalHoursWrapper) totalHoursWrapper.classList.remove('hidden');
+
+                if (totalQtyDisplay) totalQtyDisplay.innerText = totalQ.toLocaleString();
+                if (totalQtyWrapper) totalQtyWrapper.classList.remove('hidden');
+            } else {
+                if (totalHoursWrapper) totalHoursWrapper.classList.add('hidden');
+                if (totalQtyWrapper) totalQtyWrapper.classList.add('hidden');
+            }
+
             const tbody = document.getElementById('recordsAdminTableBody');
             const actionHeaderTh = document.getElementById('thRecordsActionHeader');
             tbody.innerHTML = '';
@@ -1265,28 +1312,14 @@
             }
 
             if (filteredRecords.length === 0) {
-                const colSpanCount = (currentRole === 'viewer') ? 7 : 8;
+                const colSpanCount = isHours ? (currentRole === 'viewer' ? 7 : 8) : (currentRole === 'viewer' ? 7 : 8);
                 tbody.innerHTML = `<tr><td colspan="${colSpanCount}" class="p-4 text-center text-slate-500">لا توجد سجلات مطابقة للفلتر المخصص</td></tr>`;
                 return;
             }
 
-            const isHours = currentSystem === 'hours';
-
             filteredRecords.forEach((r, index) => {
                 const dateStr = r.workDate || new Date(r.timestamp).toLocaleDateString('ar-EG');
-                
-                let colValue = '-';
-                let colSiteInfo = '-';
-                let driverOperatorCol = isHours ? `${r.driver || '-'}${r.operator && r.operator !== '-' ? ' / ' + r.operator : ''}` : (r.driver || '-');
-
-                if (isHours) {
-                    const isGen = r.subCategory === 'generators';
-                    colValue = isGen ? `مدة: ${r.recordedVal || 0} س` : `مدة: ${r.recordedVal || 0} س | كمية كونكريت: ${r.quantity || '-'} m³`;
-                    colSiteInfo = isGen ? `وقت التشغيل: ${r.timeRange || '-'}` : `${r.site || '-'} (${r.timeRange || '-'})`;
-                } else {
-                    colValue = r.recordedVal ? `${r.recordedVal} كم` : '-';
-                    colSiteInfo = r.recordedVal ? 'تسجيل فحص يومي' : 'عملية صيانة';
-                }
+                const driverOperatorCol = isHours ? `${r.driver || '-'}${r.operator && r.operator !== '-' ? ' / ' + r.operator : ''}` : (r.driver || '-');
 
                 let deleteActionTd = '';
                 if (currentRole !== 'viewer') {
@@ -1300,18 +1333,40 @@
                     `;
                 }
 
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="p-3">${index + 1}</td>
-                        <td class="p-3 text-white">#${r.vehicleCode} - ${r.vehicleName}</td>
-                        <td class="p-3">${driverOperatorCol}</td>
-                        <td class="p-3">${r.recordedVal || r.quantity ? 'تسجيل عمل' : 'صيانة'}</td>
-                        <td class="p-3 font-mono text-sky-400">${colValue}</td>
-                        <td class="p-3">${colSiteInfo}</td>
-                        <td class="p-3 text-slate-400">${dateStr}</td>
-                        ${deleteActionTd}
-                    </tr>
-                `;
+                if (isHours) {
+                    const isGen = r.subCategory === 'generators';
+                    const hoursVal = `${r.recordedVal || 0} س`;
+                    const qtyVal = isGen ? '-' : `${r.quantity || 0} m³`;
+                    const siteInfo = isGen ? `وقت التشغيل: ${r.timeRange || '-'}` : `${r.site || '-'} (${r.timeRange || '-'})`;
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="p-3">${index + 1}</td>
+                            <td class="p-3 text-white">#${r.vehicleCode} - ${r.vehicleName}</td>
+                            <td class="p-3">${driverOperatorCol}</td>
+                            <td class="p-3 font-mono text-sky-400">${hoursVal}</td>
+                            <td class="p-3 font-mono text-teal-400">${qtyVal}</td>
+                            <td class="p-3">${siteInfo}</td>
+                            <td class="p-3 text-slate-400">${dateStr}</td>
+                            ${deleteActionTd}
+                        </tr>
+                    `;
+                } else {
+                    const colValue = r.recordedVal ? `${r.recordedVal} كم` : '-';
+                    const colSiteInfo = r.recordedVal ? 'تسجيل فحص يومي' : 'عملية صيانة';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="p-3">${index + 1}</td>
+                            <td class="p-3 text-white">#${r.vehicleCode} - ${r.vehicleName}</td>
+                            <td class="p-3">${driverOperatorCol}</td>
+                            <td class="p-3 font-mono text-sky-400">${colValue}</td>
+                            <td class="p-3">${colSiteInfo}</td>
+                            <td class="p-3 text-slate-400">${dateStr}</td>
+                            ${deleteActionTd}
+                        </tr>
+                    `;
+                }
             });
         };
 
@@ -1327,7 +1382,18 @@
             const yearVal = document.getElementById('recFilterYear').value || 'الكل';
             const vehicleVal = document.getElementById('recFilterVehicle').value || 'جميع الآليات';
 
-            detailsHeader.innerText = `التصفية: السنة (${yearVal}) - الشهر (${monthVal}) - الآلية (${vehicleVal}) | الترتيب: من الأقدم إلى الأحدث`;
+            const isHours = currentSystem === 'hours';
+            let totalH = 0;
+            let totalQ = 0;
+
+            if (isHours) {
+                filteredRecords.forEach(r => {
+                    totalH += Number(r.recordedVal) || 0;
+                    totalQ += Number(r.quantity) || 0;
+                });
+            }
+
+            detailsHeader.innerText = `التصفية: السنة (${yearVal}) - الشهر (${monthVal}) - الآلية (${vehicleVal}) ${isHours ? '| إجمالي الساعات: ' + totalH.toLocaleString() + ' ساعة | إجمالي الكونكريت: ' + totalQ.toLocaleString() + ' m³' : ''} | الترتيب: من الأقدم إلى الأحدث`;
             printBody.innerHTML = '';
 
             if (filteredRecords.length === 0) {
@@ -1335,29 +1401,56 @@
                 return;
             }
 
-            const isHours = currentSystem === 'hours';
             const recordsToPrint = [...filteredRecords].sort((a, b) => new Date(a.workDate || a.timestamp) - new Date(b.workDate || b.timestamp));
 
             recordsToPrint.forEach((r, index) => {
                 const dateStr = r.workDate || new Date(r.timestamp).toLocaleDateString('ar-EG');
                 let driverOperatorCol = isHours ? `${r.driver || '-'}${r.operator && r.operator !== '-' ? ' / ' + r.operator : ''}` : (r.driver || '-');
 
-                const isGen = r.subCategory === 'generators';
-                let colValue = isHours ? (isGen ? `مدة: ${r.recordedVal || 0} س` : `مدة: ${r.recordedVal || 0} س | كمية كونكريت: ${r.quantity || '-'} m³`) : `${r.recordedVal || '-'} كم`;
-                let colSiteInfo = isHours ? (isGen ? `وقت التشغيل: ${r.timeRange || '-'}` : `${r.site || '-'} (${r.timeRange || '-'})`) : 'فحص دوري';
+                if (isHours) {
+                    const isGen = r.subCategory === 'generators';
+                    const hoursVal = `${r.recordedVal || 0} س`;
+                    const qtyVal = isGen ? '-' : `${r.quantity || 0} m³`;
+                    const siteInfo = isGen ? `وقت التشغيل: ${r.timeRange || '-'}` : `${r.site || '-'} (${r.timeRange || '-'})`;
 
+                    printBody.innerHTML += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>#${r.vehicleCode} - ${r.vehicleName}</td>
+                            <td>${driverOperatorCol}</td>
+                            <td>${hoursVal}</td>
+                            <td>${qtyVal}</td>
+                            <td>${siteInfo}</td>
+                            <td>${dateStr}</td>
+                        </tr>
+                    `;
+                } else {
+                    const colValue = `${r.recordedVal || '-'} كم`;
+                    const colSiteInfo = 'فحص دوري';
+
+                    printBody.innerHTML += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>#${r.vehicleCode} - ${r.vehicleName}</td>
+                            <td>${driverOperatorCol}</td>
+                            <td>${colValue}</td>
+                            <td>${colSiteInfo}</td>
+                            <td>${dateStr}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            if (isHours) {
                 printBody.innerHTML += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>#${r.vehicleCode} - ${r.vehicleName}</td>
-                        <td>${driverOperatorCol}</td>
-                        <td>${r.recordedVal || r.quantity ? 'فحص يومي' : 'صيانة'}</td>
-                        <td>${colValue}</td>
-                        <td>${colSiteInfo}</td>
-                        <td>${dateStr}</td>
+                    <tr style="font-weight: bold; background-color: #f1f5f9 !important;">
+                        <td colspan="3" style="text-align: left; padding: 8px;">الإجمالي المجمّع:</td>
+                        <td style="text-align: center; padding: 8px; color: #000;">${totalH.toLocaleString()} ساعة</td>
+                        <td style="text-align: center; padding: 8px; color: #000;">${totalQ.toLocaleString()} m³</td>
+                        <td colspan="2" style="text-align: center; padding: 8px; color: #000;">-</td>
                     </tr>
                 `;
-            });
+            }
 
             document.body.className = 'print-report-mode';
             window.print();
