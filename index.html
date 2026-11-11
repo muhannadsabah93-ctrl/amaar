@@ -693,6 +693,7 @@
             const infoBox = document.getElementById('driverVehicleInfoBox');
             const currentValInput = document.getElementById('driverCurrentValInput');
             const badgeWrapper = document.getElementById('remainingBadgeWrapper');
+            const submitBtn = document.getElementById('driverSubmitBtn');
 
             if(currentValInput) currentValInput.value = '';
             
@@ -711,8 +712,12 @@
                 if(siteWrapper) siteWrapper.classList.add('hidden');
                 if(qtyWrapper) qtyWrapper.classList.add('hidden');
                 if(dateInputWrapper) dateInputWrapper.classList.add('hidden');
+                if(submitBtn) submitBtn.classList.add('hidden');
                 return; 
             }
+
+            // إظهار زر الإرسال عند اختيار الآلية بنجاح
+            if(submitBtn) submitBtn.classList.remove('hidden');
 
             const v = windowVehicles.find(item => item.code === code);
             if (!v) return;
@@ -875,6 +880,115 @@
                 badge.innerText = "تجاوز للاستحقاق - يحتاج صيانة فورية";
                 title.innerText = remaining === 0 ? "وصل العداد لموعد التبديل المباشر!" : `متجاوز بمقدار: ${overLimit.toLocaleString()} ${unit}`;
                 sub.innerText = `عداد الاستحقاق كان عند: ${targetVal.toLocaleString()} ${unit}`;
+            }
+        };
+
+        // دالة مساعدة لحساب الفارق الزمني بالساعات
+        function calculateTimeDifferenceInHours(h1, m1, p1, h2, m2, p2) {
+            let hour1 = parseInt(h1, 10);
+            let hour2 = parseInt(h2, 10);
+            const min1 = parseInt(m1, 10);
+            const min2 = parseInt(m2, 10);
+
+            if (p1 === 'مساءً' && hour1 < 12) hour1 += 12;
+            if (p1 === 'صباحاً' && hour1 === 12) hour1 = 0;
+            
+            if (p2 === 'مساءً' && hour2 < 12) hour2 += 12;
+            if (p2 === 'صباحاً' && hour2 === 12) hour2 = 0;
+
+            let time1 = hour1 * 60 + min1;
+            let time2 = hour2 * 60 + min2;
+
+            if (time2 <= time1) {
+                time2 += 24 * 60;
+            }
+
+            const diffMinutes = time2 - time1;
+            return parseFloat((diffMinutes / 60).toFixed(2));
+        }
+
+        // دالة إرسال وحفظ السجل المضافة حديثاً لحل المشكلة
+        window.submitDriverCheck = async function() {
+            const code = document.getElementById('driverVehicleSelect').value;
+            if (!code) {
+                alert('يرجى اختيار الآلية / السائق أولاً!');
+                return;
+            }
+
+            const v = windowVehicles.find(item => item.code === code);
+            if (!v) return;
+
+            let recordObj = {};
+            const recId = "REC-" + Date.now();
+
+            if (currentSystem === 'hours') {
+                const workDate = document.getElementById('driverWorkDateInput').value;
+                if (!workDate) {
+                    alert('يرجى تحديد تاريخ الصب/العمل!');
+                    return;
+                }
+
+                const fromH = document.getElementById('driverTimeFromHour').value;
+                const fromM = document.getElementById('driverTimeFromMin').value;
+                const fromP = document.getElementById('driverTimeFromPeriod').value;
+
+                const toH = document.getElementById('driverTimeToHour').value;
+                const toM = document.getElementById('driverTimeToMin').value;
+                const toP = document.getElementById('driverTimeToPeriod').value;
+
+                const hoursWorked = calculateTimeDifferenceInHours(fromH, fromM, fromP, toH, toM, toP);
+                
+                let qty = 0;
+                let site = '';
+                if (v.subCategory === 'pumps') {
+                    qty = Number(document.getElementById('driverQtyInput').value) || 0;
+                    site = document.getElementById('driverSiteInput').value.trim() || '-';
+                }
+
+                recordObj = {
+                    id: recId,
+                    timestamp: new Date().toISOString(),
+                    workDate: workDate,
+                    vehicleCode: v.code,
+                    vehicleName: v.name,
+                    subCategory: v.subCategory || '',
+                    driver: v.driver || '-',
+                    operator: v.operator || '-',
+                    recordedVal: hoursWorked,
+                    quantity: qty,
+                    site: site,
+                    timeRange: `${fromH}:${fromM} ${fromP} - ${toH}:${toM} ${toP}`,
+                    systemType: 'hours'
+                };
+            } else {
+                const currentVal = Number(document.getElementById('driverCurrentValInput').value);
+                if (!currentVal || currentVal <= 0) {
+                    alert('يرجى إدخال العداد الحالي للسيارة!');
+                    return;
+                }
+
+                recordObj = {
+                    id: recId,
+                    timestamp: new Date().toISOString(),
+                    workDate: new Date().toISOString().split('T')[0],
+                    vehicleCode: v.code,
+                    vehicleName: v.name,
+                    driver: v.driver || '-',
+                    recordedVal: currentVal,
+                    systemType: 'km'
+                };
+            }
+
+            try {
+                await setDoc(doc(db, "records", recId), recordObj);
+                alert('تم إرسال وحفظ السجل بنجاح!');
+                
+                // إعادة ضبط الحقول
+                document.getElementById('driverVehicleSelect').value = '';
+                window.onDriverVehicleChange();
+            } catch (err) {
+                console.error("خطأ أثناء حفظ السجل:", err);
+                alert('حدث خطأ أثناء حفظ البيانات، يرجى المحاولة لاحقاً.');
             }
         };
 
